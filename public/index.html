@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Точка уюта. Мебель из МДФ на заказ</title>
+<meta name="description" content="Кухни, шкафы, полки и столы из панелей МДФ под ваш проём. Идлиб-Фуа, собственное производство, изготовление от 3 до 5 дней.">
+<meta name="theme-color" content="#0E1113">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip" href="#zayavka">Перейти к заявке на замер</a>
+
+<!-- ============ ШАПКА ============ -->
+<header class="top">
+  <a class="mark" href="#top" aria-label="Точка уюта, на главную">
+    <img class="mark__logo" src="assets/logo.jpg" alt="" width="320" height="320" decoding="async">
+  </a>
+  <nav class="top__nav" aria-label="Разделы">
+    <a href="#chto">Что делаем</a>
+    <a href="#tsekh">Производство</a>
+    <a href="#srok">Сроки</a>
+    <a href="#raboty">Работы</a>
+  </nav>
+  <a class="btn btn--ghost top__cta" href="#zayavka">Замер</a>
+</header>
+
+<main id="top">
+
+<!-- ============ 1. ПЕРВЫЙ ЭКРАН ============ -->
+<!-- Устройство: липкий холст, чертёж рисуется по мере прокрутки -->
+<section class="hero" id="hero">
+  <div class="hero__rail">
+    <div class="hero__stage">
+
+      <svg class="draft" viewBox="0 0 1200 660" preserveAspectRatio="xMidYMid meet" role="img"
+           aria-label="Чертёж кухонного гарнитура с проставленными размерами">
+
+        <!-- пол и стена -->
+        <g class="d-room">
+          <path class="ln" pathLength="1" d="M60 560 H1140"/>
+          <path class="ln-thin" pathLength="1" d="M100 40 V560 M1100 40 V560"/>
+        </g>
+
+        <!-- нижние модули -->
+        <g class="d-base">
+          <path class="ln" pathLength="1" d="M140 382 H340 V560 H140 Z"/>
+          <path class="ln" pathLength="1" d="M540 382 H740 V560 H540 Z"/>
+          <path class="ln" pathLength="1" d="M740 382 H940 V560 H740 Z"/>
+          <path class="ln-thin" pathLength="1" d="M180 420 H300 M580 420 H700 M780 420 H900"/>
+        </g>
+
+        <!-- столешница -->
+        <!-- столешница: единственный элемент цвета материала -->
+        <g class="d-counter">
+          <path class="ln-edge" pathLength="1" d="M124 366 H956 V382 H124 Z"/>
+        </g>
+
+        <!-- верхние модули и вытяжка -->
+        <g class="d-upper">
+          <path class="ln" pathLength="1" d="M140 120 H340 V300 H140 Z"/>
+          <path class="ln" pathLength="1" d="M740 120 H940 V300 H740 Z"/>
+          <path class="ln" pathLength="1" d="M560 300 L590 182 H690 L720 300 Z"/>
+          <path class="ln-thin" pathLength="1" d="M180 286 H300 M780 286 H900"/>
+        </g>
+
+        <!-- размерные цепи -->
+        <g class="d-dims">
+          <!-- общий габарит понизу -->
+          <path class="ln-ext" d="M140 572 V618 M940 572 V618 M340 586 V618 M540 586 V618 M740 586 V618"/>
+          <path class="ln-dim" d="M140 606 H940"/>
+          <path class="ln-dim" d="M134 612 L146 600 M334 612 L346 600 M534 612 L546 600 M734 612 L746 600 M934 612 L946 600"/>
+          <text class="num" x="540" y="596" text-anchor="middle">2800</text>
+
+          <!-- высота нижнего ряда справа -->
+          <path class="ln-ext" d="M948 382 H1016 M948 560 H1016"/>
+          <path class="ln-dim" d="M1004 382 V560"/>
+          <path class="ln-dim" d="M998 388 L1010 376 M998 566 L1010 554"/>
+          <text class="num num--rot" x="1004" y="471" text-anchor="middle" transform="rotate(-90 1004 471)">850</text>
+
+          <!-- ширина одного модуля -->
+          <path class="ln-ext" d="M540 330 V372 M740 330 V372"/>
+          <path class="ln-dim" d="M540 344 H740"/>
+          <path class="ln-dim" d="M534 350 L546 338 M734 350 L746 338"/>
+          <text class="num" x="640" y="334" text-anchor="middle">700</text>
+        </g>
+
+        <!-- деталь, которая снимается с листа -->
+        <g class="d-piece">
+          <g class="d-piece__slot">
+            <path class="ln-cut" d="M340 382 H540 V560 H340 Z"/>
+          </g>
+          <g class="d-piece__body">
+            <path class="ln" pathLength="1" d="M340 382 H540 V560 H340 Z"/>
+            <path class="ln-thin" pathLength="1" d="M380 420 H500"/>
+            <circle class="pill" cx="440" cy="500" r="17"/>
+            <text class="pill-num" x="440" y="506" text-anchor="middle">4</text>
+          </g>
+        </g>
+      </svg>
+
+      <div class="hero__copy">
+        <h1 class="hero__h1">Мебель по размеру<br>вашего&nbsp;проёма</h1>
+        <p class="hero__lede">Кухни, шкафы, полки и столы из панелей МДФ. Считаем по факту замера, а не по каталогу готовых размеров.</p>
+        <div class="hero__act">
+          <a class="btn btn--solid" href="#zayavka">Вызвать замерщика</a>
+          <span class="hero__note">Замер бесплатный</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. ЧЕТЫРЕ ЧЕРТЁЖНЫЕ ТАБЛИЦЫ ============ -->
+<!-- Устройство: лист с четырьмя плитами, на каждой своё изделие в разрезе -->
+<section class="plates-sec" id="chto">
+  <div class="wrap">
+    <h2>Что делаем</h2>
+
+    <div class="plates">
+
+      <article class="plate">
+        <svg class="plate__svg" viewBox="0 0 320 224" role="img" aria-label="Схема кухонного гарнитура с габаритом по ширине">
+          <path class="ln-thin" d="M18 182 H302"/>
+          <path class="ln" d="M40 120 H150 V182 H40 Z"/>
+          <path class="ln" d="M150 120 H260 V182 H150 Z"/>
+          <path class="ln-edge" d="M32 110 H268 V120 H32 Z"/>
+          <path class="ln" d="M40 38 H120 V94 H40 Z"/>
+          <path class="ln" d="M200 38 H260 V94 H200 Z"/>
+          <path class="ln" d="M134 94 L150 52 H186 L202 94 Z"/>
+          <path class="ln-thin" d="M62 134 H98 M172 134 H208"/>
+          <path class="ln-ext" d="M40 188 V212 M260 188 V212"/>
+          <path class="ln-dim" d="M40 204 H260"/>
+          <path class="ln-dim" d="M35 209 L45 199 M255 209 L265 199"/>
+          <text class="num num--s" x="150" y="199" text-anchor="middle">2800</text>
+        </svg>
+        <div class="plate__cap">
+          <span class="pillnum">1</span>
+          <div>
+            <h3>Кухни</h3>
+            <p>Прямые и угловые, с обходом труб, розеток и подоконника.</p>
+            <span class="mono spec">корпус 16 мм, фасад МДФ</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="plate">
+        <svg class="plate__svg" viewBox="0 0 320 224" role="img" aria-label="Схема шкафа с габаритом по высоте">
+          <path class="ln-thin" d="M50 196 H268"/>
+          <path class="ln" d="M86 24 H226 V196 H86 Z"/>
+          <path class="ln" d="M156 24 V196"/>
+          <path class="ln-thin" d="M86 62 H226"/>
+          <path class="ln-thin" d="M86 184 H226"/>
+          <path class="ln-thin" d="M144 106 V132 M168 106 V132"/>
+          <path class="ln-ext" d="M232 24 H282 M232 196 H282"/>
+          <path class="ln-dim" d="M270 24 V196"/>
+          <path class="ln-dim" d="M265 29 L275 19 M265 201 L275 191"/>
+          <text class="num num--s" x="258" y="110" text-anchor="middle" transform="rotate(-90 258 110)">2400</text>
+        </svg>
+        <div class="plate__cap">
+          <span class="pillnum">2</span>
+          <div>
+            <h3>Шкафы</h3>
+            <p>Распашные и купе, во всю высоту потолка, без антресольной щели.</p>
+            <span class="mono spec">глубина от 350 до 600</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="plate">
+        <svg class="plate__svg" viewBox="0 0 320 224" role="img" aria-label="Схема навесных полок с габаритом по пролёту">
+          <path class="ln" d="M66 42 V178 M254 42 V178"/>
+          <path class="ln-edge" d="M66 42 H254 V52 H66 Z"/>
+          <path class="ln-edge" d="M66 100 H254 V110 H66 Z"/>
+          <path class="ln-edge" d="M66 158 H254 V168 H66 Z"/>
+          <path class="ln-thin" d="M92 60 V96 M228 60 V96"/>
+          <path class="ln-ext" d="M66 178 V212 M254 178 V212"/>
+          <path class="ln-dim" d="M66 204 H254"/>
+          <path class="ln-dim" d="M61 209 L71 199 M249 209 L259 199"/>
+          <text class="num num--s" x="160" y="199" text-anchor="middle">900</text>
+        </svg>
+        <div class="plate__cap">
+          <span class="pillnum">3</span>
+          <div>
+            <h3>Полки</h3>
+            <p>Навесные и в нишу, с расчётом прогиба под длину пролёта.</p>
+            <span class="mono spec">пролёт до 900</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="plate">
+        <svg class="plate__svg" viewBox="0 0 320 224" role="img" aria-label="Схема стола с габаритом по высоте">
+          <path class="ln-thin" d="M24 184 H296"/>
+          <path class="ln-edge" d="M46 88 H274 V102 H46 Z"/>
+          <path class="ln" d="M60 102 V184 M260 102 V184"/>
+          <path class="ln-thin" d="M84 102 V176 M236 102 V176"/>
+          <path class="ln-thin" d="M60 116 H260"/>
+          <path class="ln-ext" d="M280 88 H306 M280 184 H306"/>
+          <path class="ln-dim" d="M296 88 V184"/>
+          <path class="ln-dim" d="M291 93 L301 83 M291 189 L301 179"/>
+          <text class="num num--s" x="284" y="136" text-anchor="middle" transform="rotate(-90 284 136)">750</text>
+        </svg>
+        <div class="plate__cap">
+          <span class="pillnum">4</span>
+          <div>
+            <h3>Столы</h3>
+            <p>Обеденные, письменные и подоконник-столешница.</p>
+            <span class="mono spec">кромка ПВХ 2 мм</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="plate plate--wide">
+        <svg class="plate__svg" viewBox="0 0 320 224" role="img" aria-label="Схема шведской стенки с турником и габаритом по высоте">
+          <path class="ln-thin" d="M40 202 H280"/>
+          <path class="ln" d="M112 26 V202 M206 26 V202"/>
+          <path class="ln-edge" d="M112 52 H206 M112 76 H206 M112 100 H206 M112 124 H206 M112 148 H206 M112 172 H206"/>
+          <path class="ln" d="M112 26 H206"/>
+          <path class="ln" d="M126 26 L96 44 M192 26 L162 44"/>
+          <path class="ln-edge" d="M96 44 H162"/>
+          <path class="ln-thin" d="M150 26 V38 M168 26 V38"/>
+          <path class="ln-ext" d="M212 26 H266 M212 202 H266"/>
+          <path class="ln-dim" d="M254 26 V202"/>
+          <path class="ln-dim" d="M249 31 L259 21 M249 207 L259 197"/>
+          <text class="num num--s" x="242" y="114" text-anchor="middle" transform="rotate(-90 242 114)">2500</text>
+        </svg>
+        <div class="plate__cap">
+          <span class="pillnum">5</span>
+          <div>
+            <h3>Спорткомплексы</h3>
+            <p>Шведские стенки, турники и детские качели. Собираем и крепим на месте, в детской или в комнате.</p>
+            <span class="mono spec">массив дерева, не МДФ</span>
+          </div>
+        </div>
+      </article>
+
+    </div>
+    <p class="plates__fine">Размеры на схемах приведены как пример. Ваши считаются по замеру.</p>
+  </div>
+</section>
+
+<!-- ============ 3. МЕТКИ СОВМЕЩЕНИЯ ============ -->
+<!-- Устройство: две половины, которые сходятся по надсечкам -->
+<section class="join" id="tsekh">
+  <div class="wrap join__grid">
+
+    <div class="join__side">
+      <h2>Между вами и цехом<br>никого нет</h2>
+      <p class="lede">Раскрой, кромление и сборка идут на собственном производстве. Поэтому размер меняется до раскроя, а не через посредника и две недели переписки.</p>
+    </div>
+
+    <div class="join__figure" aria-hidden="true">
+      <svg viewBox="0 0 520 300" class="notch">
+        <path class="ln" d="M20 40 H250 V100 L230 120 L250 140 V200 L230 220 L250 240 V280 H20 Z"/>
+        <path class="ln" d="M500 40 H270 V100 L290 120 L270 140 V200 L290 220 L270 240 V280 H500 Z"/>
+        <path class="ln-mark" d="M250 100 H270 M250 140 H270 M250 200 H270 M250 240 H270"/>
+        <path class="ln-thin" d="M60 70 H210 M60 90 H180 M310 70 H460 M310 90 H430"/>
+        <text class="num" x="135" y="268" text-anchor="middle">ЗАМЕР</text>
+        <text class="num" x="385" y="268" text-anchor="middle">ЦЕХ</text>
+      </svg>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ 4. СРОК КАК РАЗМЕРНАЯ ЦЕПЬ ============ -->
+<!-- Устройство: одна горизонтальная линия с засечками -->
+<section class="chain" id="srok">
+  <div class="wrap">
+    <h2 class="chain__h2">Сколько это занимает</h2>
+
+    <div class="chain__track">
+      <ol class="chain__steps">
+        <li><span class="mono st">01</span><span class="nm">Замер</span></li>
+        <li><span class="mono st">02</span><span class="nm">Проект</span></li>
+        <li class="is-span"><span class="mono st">03</span><span class="nm">Раскрой</span></li>
+        <li class="is-span"><span class="mono st">04</span><span class="nm">Сборка</span></li>
+        <li><span class="mono st">05</span><span class="nm">Установка</span></li>
+      </ol>
+      <div class="chain__span">
+        <span class="chain__span-label mono">Изготовление, от 3 до 5 дней</span>
+      </div>
+    </div>
+
+    <p class="chain__fine">Срок считается на изготовление. Дату замера и установки согласуем по вашему графику.</p>
+  </div>
+</section>
+
+<!-- ============ 5. РАБОТЫ ============ -->
+<!-- Устройство: асимметричная сетка кадров с выносками -->
+<section class="works" id="raboty">
+  <div class="wrap">
+    <h2>Сделанное</h2>
+
+    <div class="works__grid">
+
+      <figure class="frame" data-gallery>
+        <div class="frame__box">
+          <span class="frame__corner frame__corner--tl"></span>
+          <span class="frame__corner frame__corner--br"></span>
+          <img data-shot src="assets/works/kuhnya-1.jpg" alt="Кухня до работ: бетонная тумба без фасадов" loading="lazy" decoding="async" width="800" height="450">
+        </div>
+        <div class="views" role="group" aria-label="Виды проекта: кухня">
+          <button type="button" class="view is-on" aria-pressed="true"
+            data-src="assets/works/kuhnya-1.jpg"
+            data-alt="Кухня до работ: бетонная тумба без фасадов"
+            data-cap="До работ, бетонная тумба">1</button>
+          <button type="button" class="view" aria-pressed="false"
+            data-src="assets/works/kuhnya-2.jpg"
+            data-alt="Собранные корпуса кухни перед установкой"
+            data-cap="Корпуса собраны, идёт установка">2</button>
+          <button type="button" class="view" aria-pressed="false"
+            data-src="assets/works/kuhnya-3.jpg"
+            data-alt="Готовая угловая кухня с гранитной столешницей"
+            data-cap="Готово, угловой гарнитур">3</button>
+        </div>
+        <figcaption><span class="mono dim">кухня</span> <span data-cap>До работ, бетонная тумба</span></figcaption>
+      </figure>
+
+      <figure class="frame" data-gallery>
+        <div class="frame__box">
+          <span class="frame__corner frame__corner--tl"></span>
+          <span class="frame__corner frame__corner--br"></span>
+          <img data-shot src="assets/works/shkafy-1.jpg" alt="Навесные шкафчики с сушилкой для посуды, дверца открыта" loading="lazy" decoding="async" width="600" height="800">
+        </div>
+        <div class="views" role="group" aria-label="Виды проекта: навесные шкафы">
+          <button type="button" class="view is-on" aria-pressed="true"
+            data-src="assets/works/shkafy-1.jpg"
+            data-alt="Навесные шкафчики с сушилкой для посуды, дверца открыта"
+            data-cap="Сушилка внутри корпуса">1</button>
+          <button type="button" class="view" aria-pressed="false"
+            data-src="assets/works/shkafy-2.jpg"
+            data-alt="Навесные шкафчики с закрытыми фасадами над рабочей зоной"
+            data-cap="Фасады закрыты">2</button>
+        </div>
+        <figcaption><span class="mono dim">шкафы</span> <span data-cap>Сушилка внутри корпуса</span></figcaption>
+      </figure>
+
+      <figure class="frame" data-gallery>
+        <div class="frame__box">
+          <span class="frame__corner frame__corner--tl"></span>
+          <span class="frame__corner frame__corner--br"></span>
+          <img data-shot src="assets/works/polki-1.jpg" alt="Три навесные полки из МДФ с книгами" loading="lazy" decoding="async" width="600" height="800">
+        </div>
+        <div class="views" role="group" aria-label="Виды проекта: полки">
+          <button type="button" class="view is-on" aria-pressed="true"
+            data-src="assets/works/polki-1.jpg"
+            data-alt="Три навесные полки из МДФ с книгами"
+            data-cap="Три полки, комната">1</button>
+          <button type="button" class="view" aria-pressed="false"
+            data-src="assets/works/polki-2.jpg"
+            data-alt="Навесная полка из МДФ с вазой"
+            data-cap="Одиночная полка, 695 × 295">2</button>
+        </div>
+        <figcaption><span class="mono dim">полки</span> <span data-cap>Три полки, комната</span></figcaption>
+      </figure>
+
+      <figure class="frame">
+        <div class="frame__box">
+          <span class="frame__corner frame__corner--tl"></span>
+          <span class="frame__corner frame__corner--br"></span>
+          <img src="assets/works/stenka-1.jpg" alt="Шведская стенка из дерева с турником, высота 2.5 метра" loading="lazy" decoding="async" width="600" height="800">
+        </div>
+        <figcaption><span class="mono dim">спорткомплекс</span> Шведская стенка с турником, 2.5 × 0.75 м</figcaption>
+      </figure>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. ЗАЯВКА ============ -->
+<!-- Устройство: форма как графы спецификации -->
+<section class="order" id="zayavka">
+  <div class="wrap order__wrap">
+    <div class="order__intro">
+      <h2>Заявка на замер</h2>
+      <p class="lede">Замерщик приедет, снимет проём и посчитает по факту. Бесплатно и без обязательств.</p>
+    </div>
+
+    <form class="spec" id="form" novalidate>
+      <div class="spec__row">
+        <label class="spec__key" for="f-name">Имя</label>
+        <div class="spec__val">
+          <input id="f-name" name="name" type="text" autocomplete="given-name" placeholder="Как к вам обращаться" required>
+          <p class="spec__err" data-err-for="f-name" hidden>Напишите имя, чтобы замерщик знал, к кому едет</p>
+        </div>
+      </div>
+
+      <div class="spec__row">
+        <label class="spec__key" for="f-contact">Связь</label>
+        <div class="spec__val">
+          <input id="f-contact" name="contact" type="text" placeholder="Телефон или @username в Telegram" required>
+          <p class="spec__hint">Как вам удобнее. Можно просто имя в Telegram.</p>
+          <p class="spec__err" data-err-for="f-contact" hidden>Оставьте телефон или имя в Telegram, иначе мы не сможем ответить</p>
+        </div>
+      </div>
+
+      <div class="spec__row">
+        <span class="spec__key" id="lbl-kind">Что нужно</span>
+        <div class="spec__val">
+          <div class="choice" role="radiogroup" aria-labelledby="lbl-kind">
+            <label class="choice__item"><input type="radio" name="kind" value="Кухня" checked><span>Кухня</span></label>
+            <label class="choice__item"><input type="radio" name="kind" value="Шкаф"><span>Шкаф</span></label>
+            <label class="choice__item"><input type="radio" name="kind" value="Полки"><span>Полки</span></label>
+            <label class="choice__item"><input type="radio" name="kind" value="Стол"><span>Стол</span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="spec__row">
+        <label class="spec__key" for="f-size">Проём</label>
+        <div class="spec__val">
+          <div class="measure">
+            <input id="f-size" name="size" type="text" inputmode="numeric" placeholder="ширина, если знаете">
+            <span class="measure__unit mono">мм</span>
+          </div>
+          <p class="spec__hint">Не обязательно. Точные размеры снимет замерщик.</p>
+        </div>
+      </div>
+
+      <div class="spec__foot">
+        <button class="btn btn--solid" type="submit" id="submit">Вызвать замерщика</button>
+        <p class="spec__legal">Отправляя заявку, вы соглашаетесь на обработку указанных данных для связи по ней.</p>
+      </div>
+
+      <output class="notice" id="notice" hidden></output>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ 7. ПОДВАЛ ============ -->
+<footer class="foot">
+  <div class="wrap foot__grid">
+    <div class="foot__mark">
+      <span class="mark__text"><b>Точка</b> уюта</span>
+      <p class="dim">Корпусная мебель из панелей МДФ на заказ</p>
+    </div>
+    <dl class="foot__data">
+      <div>
+        <dt>Написать, сёстры</dt>
+        <dd><a class="ph" href="https://t.me/BintApandi" target="_blank" rel="noopener">@BintApandi</a></dd>
+      </div>
+      <div>
+        <dt>Написать, братья</dt>
+        <dd><a class="ph" href="https://t.me/AAA116Z" target="_blank" rel="noopener">@AAA116Z</a></dd>
+      </div>
+      <div><dt>Город</dt><dd>Идлиб-Фуа</dd></div>
+      <div>
+        <dt>Канал</dt>
+        <dd><a class="ph" href="https://t.me/rahatliq_noqtesi" target="_blank" rel="noopener">@rahatliq_noqtesi</a></dd>
+      </div>
+    </dl>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

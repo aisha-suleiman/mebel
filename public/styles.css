@@ -1,0 +1,536 @@
+/* =========================================================
+   Точка уюта. Мир: выкройка на тёмном дереве.
+   Пунктир означает выбранное состояние. Бирюза = действие, дуб = материал.
+   ========================================================= */
+
+:root{
+  /* земля тёмного дерева, тёплые нейтралы поверх */
+  --ink:        #2B1E16;
+  --ink-2:      #332519;
+  --ink-3:      #3C2C1F;
+  --chalk:      #F2EBE3;
+  --chalk-2:    #C8BAAD;
+  --chalk-3:    #A2938A;
+  --rule:       #4A3728;
+  --rule-2:     #5C4634;
+  /* два цвета с разными ролями.
+     бирюза  = действие и выбранное состояние
+     дерево  = материал: лист, кромка, торец */
+  --turq:       #24A7A2;
+  --turq-hi:    #3FC5BF;
+  --turq-deep:  #0A6E62;
+  /* на коричневой земле материал читается только светлым дубом,
+     тёмный коричневый акцент на ней даёт всего 4.07 и не проходит */
+  --wood:       #E0B87C;
+  --wood-hi:    #EED2A0;
+  --wood-deep:  #8A6A45;
+
+  --ff:   "Geologica", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --wrap: 1240px;
+  --gut:  clamp(20px, 4vw, 56px);
+  --sec:  clamp(88px, 12vw, 176px);
+
+  --ease: cubic-bezier(.16,1,.3,1);
+  --dur:  .34s;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--chalk-2);
+  font:300 16px/1.65 var(--ff);
+  -webkit-font-smoothing:antialiased;
+  /* clip, а не hidden: hidden делает body контейнером прокрутки и ломает sticky */
+  overflow-x:clip;
+}
+
+/* --- поверхности браузера, которые тоже наши --- */
+::selection{background:var(--turq);color:var(--ink)}
+:where(input,textarea){caret-color:var(--turq)}
+:focus-visible{outline:2px solid var(--turq);outline-offset:3px;border-radius:2px}
+html{scrollbar-color:var(--rule-2) var(--ink);scrollbar-width:thin}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:var(--ink)}
+::-webkit-scrollbar-thumb{background:var(--rule-2);border:3px solid var(--ink);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:#70573F}
+
+.skip{
+  position:fixed;left:-999px;top:12px;z-index:99;
+  background:var(--turq);color:var(--ink);padding:10px 18px;
+  font-weight:500;text-decoration:none;border-radius:2px;
+}
+.skip:focus,.skip:focus-visible{left:12px}
+
+.wrap{max-width:var(--wrap);margin-inline:auto;padding-inline:var(--gut)}
+.mono{font-family:var(--mono);font-weight:400;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.dim{color:var(--chalk-3)}
+.lede{max-width:52ch;color:var(--chalk-2);font-size:clamp(1rem,1.2vw,1.125rem)}
+
+h1,h2,h3{color:var(--chalk);font-weight:500;margin:0;text-wrap:balance}
+h2{font-size:clamp(1.9rem,3.6vw,3rem);line-height:1.06;letter-spacing:-.025em}
+h3{font-size:1.0625rem;line-height:1.3;letter-spacing:-.01em;font-weight:500}
+p{margin:0}
+
+/* ============ КНОПКИ ============ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:48px;padding:0 26px;
+  font:500 .9375rem/1 var(--ff);
+  text-decoration:none;border-radius:2px;cursor:pointer;
+  border:1px solid transparent;
+  transition:background var(--dur) var(--ease),color var(--dur) var(--ease),border-color var(--dur) var(--ease);
+}
+.btn--solid{background:var(--turq);color:var(--ink);border-color:var(--turq)}
+.btn--solid:hover{background:var(--turq-hi);border-color:var(--turq-hi)}
+.btn--ghost{color:var(--chalk);border-color:var(--rule-2);background:transparent}
+.btn--ghost:hover{border-color:var(--turq);color:var(--turq)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.is-busy{color:transparent;position:relative}
+.btn.is-busy::after{
+  content:"";position:absolute;width:16px;height:16px;border-radius:99px;
+  border:2px solid rgba(43,30,22,.3);border-top-color:var(--ink);
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ============ ШАПКА ============ */
+.top{
+  position:fixed;inset:0 0 auto 0;z-index:40;
+  display:flex;align-items:center;gap:32px;
+  padding:16px var(--gut);
+  background:color-mix(in srgb, var(--ink) 86%, transparent);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid transparent;
+  transition:border-color var(--dur) var(--ease);
+}
+.top.is-stuck{border-bottom-color:var(--rule)}
+.mark{display:flex;align-items:center;gap:10px;text-decoration:none}
+/* Логотип канала: светлый кругляш на тёмной земле.
+   Исходник 320 × 320, поэтому вплоть до 160 px в шапке
+   остаётся резким даже на экране с двойной плотностью. */
+.mark__logo{
+  width:auto;height:76px;border-radius:99px;display:block;
+  background:var(--chalk);
+}
+@media(max-width:620px){.mark__logo{height:60px}}
+.mark__text{color:var(--chalk);font-size:.9375rem;font-weight:300;letter-spacing:-.01em;white-space:nowrap}
+.mark__text b{font-weight:600}
+.node-dot{fill:var(--turq)}
+.node-ring{opacity:.5}
+.top__nav{display:flex;gap:26px;margin-left:auto}
+.top__nav a{color:var(--chalk-2);text-decoration:none;font-size:.875rem;transition:color var(--dur) var(--ease)}
+.top__nav a:hover{color:var(--chalk)}
+.top__cta{min-height:44px;padding:0 20px;font-size:.875rem}
+
+/* ============ 1. ПЕРВЫЙ ЭКРАН ============ */
+.hero{position:relative}
+.hero__rail{height:auto}
+.hero__stage{
+  position:relative;min-height:100svh;overflow:hidden;
+  display:grid;place-items:center;
+  background:
+    repeating-linear-gradient(to right, var(--rule) 0 1px, transparent 1px 100%) 0 0/24px 100%,
+    repeating-linear-gradient(to bottom, var(--rule) 0 1px, transparent 1px 100%) 0 0/100% 24px,
+    var(--ink);
+  background-blend-mode:normal;
+}
+.hero__stage::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    repeating-linear-gradient(to right, var(--rule-2) 0 1px, transparent 1px 100%) 0 0/120px 100%,
+    repeating-linear-gradient(to bottom, var(--rule-2) 0 1px, transparent 1px 100%) 0 0/100% 120px;
+  opacity:.55;
+}
+.hero__stage::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 45%, transparent 40%, var(--ink) 100%);
+}
+
+.draft{
+  position:relative;z-index:1;
+  width:min(96vw, 1200px);height:auto;max-height:78svh;
+}
+.ln,.ln-thin,.ln-dim,.ln-ext,.ln-cut,.ln-mark,.ln-edge{fill:none;stroke-linecap:square}
+.ln-edge{stroke:var(--wood);stroke-width:1.8}
+.ln{stroke:var(--chalk);stroke-width:1.6}
+.ln-thin{stroke:var(--chalk-3);stroke-width:1}
+.ln-mark{stroke:var(--turq);stroke-width:1.6}
+.ln-dim{stroke:var(--chalk-2);stroke-width:1}
+.ln-ext{stroke:var(--rule-2);stroke-width:1}
+.ln-cut{stroke:var(--turq);stroke-width:1.4;stroke-dasharray:7 6}
+
+/* Чертёж собирается сам при загрузке, в том порядке, в каком его
+   рисовали бы руками: помещение, низ, снимаемая деталь, столешница, верх.
+   Затем проступают размеры, затем деталь снимается с листа. */
+@keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes lift{
+  from{transform:none;opacity:1}
+  to{transform:translateX(-230px) translateY(-96px);opacity:.18}
+}
+
+.d-room .ln,.d-room .ln-thin,
+.d-base .ln,.d-base .ln-thin,
+.d-counter .ln-edge,
+.d-upper .ln,.d-upper .ln-thin,
+.d-piece__body .ln,.d-piece__body .ln-thin{
+  stroke-dasharray:1;
+  animation:draw .9s var(--ease) both;
+}
+.d-room  .ln,.d-room  .ln-thin{animation-delay:.15s}
+.d-base  .ln,.d-base  .ln-thin{animation-delay:.75s}
+.d-piece__body .ln,.d-piece__body .ln-thin{animation-delay:1.3s}
+.d-counter .ln-edge{animation-delay:1.85s}
+.d-upper .ln,.d-upper .ln-thin{animation-delay:2.25s}
+
+.d-dims{animation:fade .8s var(--ease) both;animation-delay:3.1s}
+.num{
+  fill:var(--chalk-2);font-family:var(--mono);font-size:15px;font-weight:400;
+  letter-spacing:.04em;
+}
+.d-piece__slot{animation:fade .5s var(--ease) both;animation-delay:3.9s}
+.d-piece__body{animation:lift 1.2s var(--ease) both;animation-delay:3.95s}
+.pill{fill:none;stroke:var(--turq);stroke-width:1.4}
+.pill-num{fill:var(--turq);font-family:var(--mono);font-size:16px;font-weight:500}
+
+.hero__copy{
+  position:absolute;z-index:2;
+  left:var(--gut);top:50%;transform:translateY(-46%);
+  width:min(30rem, 40vw);
+}
+.hero__h1{
+  font-size:clamp(2.1rem, 4.4vw, 3.75rem);
+  line-height:1.02;letter-spacing:-.035em;font-weight:500;
+}
+.hero__lede{margin-top:18px;max-width:34ch;color:var(--chalk-2);font-size:clamp(.95rem,1.1vw,1.0625rem)}
+.hero__act{margin-top:30px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.hero__note{font-size:.8125rem;color:var(--chalk-3)}
+.hero__scroll{
+  position:absolute;z-index:2;left:50%;bottom:26px;transform:translateX(-50%);
+  font-size:.75rem;color:var(--chalk-3);letter-spacing:.04em;
+}
+
+/* на широких экранах текст и чертёж стоят в двух колонках, без наложения.
+   Блок идёт после базовых правил героя намеренно: специфичность равная,
+   выигрывает тот, кто ниже. */
+@media(min-width:1081px){
+  .hero__stage{
+    grid-template-columns:minmax(340px, 34%) minmax(0, 1fr);
+    justify-items:center;align-items:center;
+    gap:clamp(24px, 3vw, 64px);
+    padding-inline:var(--gut) clamp(16px, 3vw, 56px);
+  }
+  /* в разметке чертёж идёт первым, на экране он справа */
+  .hero__copy{
+    position:static;transform:none;width:auto;max-width:30rem;
+    grid-area:1/1;justify-self:start;
+  }
+  .draft{width:100%;max-width:840px;grid-area:1/2;justify-self:end;max-height:70svh}
+}
+
+
+/* ============ 2. ЧЕТЫРЕ ЧЕРТЁЖНЫЕ ТАБЛИЦЫ ============ */
+.plates-sec{padding-block:var(--sec);background:var(--ink)}
+.plates-sec h2{margin-bottom:clamp(40px,5vw,64px)}
+
+/* волосяные разделители вместо карточек: это лист, разбитый на плиты */
+.plates{display:grid;gap:1px;background:var(--rule);grid-template-columns:1fr}
+@media(min-width:760px){.plates{grid-template-columns:1fr 1fr}}
+.plate{
+  background:var(--ink);
+  padding:clamp(20px,2.6vw,34px);
+  display:grid;gap:clamp(18px,2vw,26px);align-content:start;
+  transition:background var(--dur) var(--ease);
+}
+.plate:hover{background:var(--ink-3)}
+
+/* штрих не масштабируется вместе со схемой, поэтому во всех плитах
+   он одной толщины и совпадает с первым экраном */
+.plate__svg{width:100%;height:auto;display:block}
+.plate__svg *{vector-effect:non-scaling-stroke}
+.num--s{font-size:11px}
+
+.plate__cap{display:flex;gap:16px;align-items:start}
+.plate__cap h3{margin-bottom:6px}
+.plate__cap p{font-size:.9375rem;color:var(--chalk-2);max-width:34ch}
+.plate__cap .spec{
+  display:block;margin-top:10px;font-size:.75rem;color:var(--wood);
+}
+.pillnum{
+  flex:0 0 auto;
+  display:grid;place-items:center;width:30px;height:30px;border-radius:99px;
+  border:1px solid var(--rule-2);color:var(--chalk-3);
+  font-family:var(--mono);font-size:.8125rem;
+  transition:border-color var(--dur) var(--ease),color var(--dur) var(--ease);
+}
+.plate:hover .pillnum{border-color:var(--turq);color:var(--turq)}
+/* пятая плита во всю ширину: другой материал, поэтому и устройство другое */
+@media(min-width:760px){
+  .plate--wide{
+    grid-column:1 / -1;
+    grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+    align-items:center;gap:clamp(24px,3vw,56px);
+  }
+}
+.plates__fine{margin-top:20px;font-size:.8125rem;color:var(--chalk-3)}
+
+/* ============ 3. МЕТКИ СОВМЕЩЕНИЯ ============ */
+.join{padding-block:var(--sec);background:var(--ink-2);border-block:1px solid var(--rule)}
+.join__grid{display:grid;gap:clamp(40px,6vw,88px);align-items:center;grid-template-columns:1fr}
+@media(min-width:900px){.join__grid{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}}
+.join__side{display:grid;gap:20px}
+.join h2{font-size:clamp(1.8rem,3.2vw,2.6rem)}
+.notch{width:100%;height:auto}
+.notch .num{font-size:13px;letter-spacing:.14em;fill:var(--chalk-3)}
+
+/* ============ 4. СРОК ============ */
+.chain{padding-block:var(--sec);background:var(--ink)}
+.chain__h2{margin-bottom:clamp(48px,6vw,80px)}
+.chain__track{position:relative;padding-top:52px}
+.chain__steps{
+  list-style:none;margin:0;padding:0;
+  display:grid;grid-template-columns:repeat(5,1fr);
+  border-top:1px solid var(--rule-2);
+}
+.chain__steps li{
+  position:relative;padding-top:22px;display:grid;gap:5px;
+  padding-right:14px;
+}
+.chain__steps li::before{
+  content:"";position:absolute;top:-1px;left:0;width:1px;height:13px;background:var(--rule-2);
+}
+.chain__steps li:last-child::after{
+  content:"";position:absolute;top:-1px;right:0;width:1px;height:13px;background:var(--rule-2);
+}
+.chain__steps .st{font-size:.75rem;color:var(--chalk-3)}
+.chain__steps .nm{color:var(--chalk);font-size:clamp(1rem,1.6vw,1.25rem);font-weight:400}
+.chain__steps li.is-span .nm{color:var(--turq)}
+.chain__span{
+  position:absolute;top:0;left:40%;width:40%;
+  border-top:1px dashed var(--turq);
+  height:34px;
+}
+.chain__span::before,.chain__span::after{
+  content:"";position:absolute;top:0;width:1px;height:34px;background:var(--turq);opacity:.55;
+}
+.chain__span::before{left:0}
+.chain__span::after{right:0}
+.chain__span-label{
+  position:absolute;top:-26px;left:50%;transform:translateX(-50%);
+  white-space:nowrap;font-size:.8125rem;color:var(--turq);
+  background:var(--ink);padding-inline:12px;
+}
+.chain__fine{margin-top:44px;font-size:.8125rem;color:var(--chalk-3);max-width:58ch}
+
+/* ============ 5. РАБОТЫ ============ */
+.works{padding-block:var(--sec);background:var(--ink-2);border-block:1px solid var(--rule)}
+.works h2{margin-bottom:clamp(36px,4vw,56px)}
+/* Три кадра в ряд, одинаковая пропорция, подписи на одной линии.
+   Растягивание одного кадра на две строки конфликтовало с его
+   собственной пропорцией и разносило сетку, поэтому убрано. */
+.works__grid{
+  display:grid;gap:clamp(18px,2.4vw,32px);
+  grid-template-columns:1fr;
+  align-items:start;
+}
+/* четыре проекта, поэтому две колонки: получается ровный квадрат 2 × 2,
+   а не ряд из трёх и одинокий четвёртый */
+@media(min-width:640px){.works__grid{grid-template-columns:repeat(2,1fr)}}
+.frame{margin:0;display:grid;gap:14px;min-width:0}
+.frame__box{
+  position:relative;aspect-ratio:4/3;padding:16px;
+  max-height:420px;
+  border:1px solid var(--rule-2);
+  display:grid;place-items:center;
+  background:var(--ink);
+}
+/* реальные снимки объектов: лёгкая тональная правка, чтобы любительские
+   кадры не спорили с тёплой землёй. Содержимое не меняется. */
+.frame__box img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;display:block;
+  filter:saturate(.88) contrast(1.04) brightness(.97);
+}
+.frame__box .frame__corner{z-index:2}
+.frame__slot{font-size:.75rem;letter-spacing:.14em;color:var(--chalk-3)}
+.frame__corner{position:absolute;width:13px;height:13px;border:1px solid var(--chalk-3)}
+.frame__corner--tl{top:9px;left:9px;border-right:0;border-bottom:0}
+.frame__corner--br{bottom:9px;right:9px;border-left:0;border-top:0}
+/* Ряд видов проекта: приём из мира выкройки, где варианты ранжируются
+   буквами A, B, C. Выбранный вид помечен бирюзовым пунктиром. */
+.views{display:flex;flex-wrap:wrap;gap:8px}
+.view{
+  min-width:44px;min-height:44px;padding:0 12px;
+  background:transparent;border:1px solid var(--rule-2);border-radius:99px;
+  color:var(--chalk-3);font:400 .8125rem/1 var(--mono);
+  font-variant-numeric:tabular-nums;cursor:pointer;
+  transition:border-color var(--dur) var(--ease),color var(--dur) var(--ease);
+}
+.view:hover{border-color:#7A5F45;color:var(--chalk)}
+.view.is-on{border:1px dashed var(--turq);color:var(--turq)}
+.view:focus-visible{outline:2px solid var(--turq);outline-offset:3px}
+
+.frame figcaption{
+  font-size:.875rem;color:var(--chalk-2);
+  display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;min-width:0;
+}
+.frame figcaption .dim{font-size:.75rem;letter-spacing:.06em;flex:0 0 auto}
+
+/* ============ 6. ЗАЯВКА ============ */
+.order{padding-block:var(--sec);background:var(--ink)}
+.order__wrap{display:grid;gap:clamp(40px,5vw,76px);grid-template-columns:1fr}
+@media(min-width:980px){.order__wrap{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:start}}
+.order__intro{display:grid;gap:18px;position:sticky;top:96px}
+@media(max-width:979px){.order__intro{position:static}}
+
+.spec{border-top:1px solid var(--rule-2)}
+.spec__row{
+  display:grid;grid-template-columns:1fr;gap:6px;
+  padding-block:22px;border-bottom:1px solid var(--rule);
+}
+@media(min-width:620px){
+  .spec__row{grid-template-columns:150px minmax(0,1fr);gap:24px;align-items:start}
+}
+.spec__key{
+  color:var(--chalk-3);font-size:.8125rem;letter-spacing:.06em;
+  padding-top:12px;
+}
+.spec__val{display:grid;gap:8px}
+
+.spec input[type=text],.spec input[type=tel]{
+  width:100%;background:transparent;border:0;border-bottom:1px solid var(--rule-2);
+  color:var(--chalk);font:400 1.0625rem/1.5 var(--ff);
+  padding:9px 0;border-radius:0;
+  transition:border-color var(--dur) var(--ease);
+}
+.spec input::placeholder{color:var(--chalk-3)}
+.spec input:hover{border-bottom-color:#7A5F45}
+.spec input:focus{outline:none;border-bottom:1px dashed var(--turq)}
+.spec input:focus-visible{outline:none}
+.spec__row:has(input:focus) .spec__key{color:var(--turq)}
+.spec__row.is-bad input{border-bottom-color:#FF6B5A}
+.spec__err{color:#FF8B7D;font-size:.8125rem}
+.spec__hint{color:var(--chalk-3);font-size:.8125rem}
+
+.measure{position:relative;display:flex;align-items:center}
+.measure input{padding-right:42px}
+.measure__unit{position:absolute;right:0;bottom:11px;font-size:.8125rem;color:var(--chalk-3)}
+
+.choice{display:flex;flex-wrap:wrap;gap:8px;padding-top:6px}
+.choice__item{position:relative;cursor:pointer}
+.choice__item input{position:absolute;opacity:0;width:0;height:0}
+.choice__item span{
+  display:inline-flex;align-items:center;min-height:44px;padding:0 18px;
+  border:1px solid var(--rule-2);color:var(--chalk-2);font-size:.9375rem;
+  transition:border-color var(--dur) var(--ease),color var(--dur) var(--ease);
+}
+.choice__item:hover span{border-color:#7A5F45;color:var(--chalk)}
+.choice__item input:checked + span{
+  border:1px dashed var(--turq);color:var(--turq);
+}
+.choice__item input:focus-visible + span{outline:2px solid var(--turq);outline-offset:3px}
+
+.spec__foot{display:grid;gap:16px;padding-top:30px;justify-items:start}
+.spec__legal{font-size:.75rem;color:var(--chalk-3);max-width:46ch}
+
+.notice{
+  display:block;margin-top:26px;padding:18px 20px;
+  border:1px dashed var(--turq);color:var(--chalk);
+  font-size:.9375rem;line-height:1.55;
+}
+.notice a{color:var(--turq)}
+.notice__lead{margin-bottom:14px}
+.notice__msg{
+  margin:0 0 18px;padding:14px 16px;
+  border:1px solid var(--rule-2);background:var(--ink);
+  font:400 .8125rem/1.6 var(--mono);color:var(--chalk-2);
+  white-space:pre-wrap;overflow-wrap:anywhere;
+}
+.notice__acts{display:flex;flex-wrap:wrap;gap:10px}
+.notice__acts .btn{min-height:44px}
+.notice__acts .btn--ghost{color:var(--chalk)}
+
+/* ============ 7. ПОДВАЛ ============ */
+.foot{padding-block:clamp(56px,7vw,96px);border-top:1px solid var(--rule);background:var(--ink-2)}
+.foot__grid{display:grid;gap:44px;grid-template-columns:1fr}
+@media(min-width:860px){.foot__grid{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)}}
+.foot__mark{display:grid;gap:10px;align-content:start}
+.foot__mark .mark__text{font-size:1.0625rem}
+.foot__mark p{font-size:.875rem;max-width:30ch}
+.foot__data{
+  display:grid;gap:1px;background:var(--rule);margin:0;
+  grid-template-columns:repeat(2,1fr);
+}
+@media(min-width:620px){.foot__data{grid-template-columns:repeat(4,1fr)}}
+.foot__data > div{background:var(--ink-2);padding:16px 18px;display:grid;gap:6px}
+.foot__data dt{font-size:.75rem;color:var(--chalk-3);letter-spacing:.05em}
+.foot__data dd{margin:0;color:var(--chalk);font-size:.9375rem}
+.foot__data a{color:var(--chalk);text-decoration:none;border-bottom:1px solid var(--rule-2)}
+.foot__data a:hover{color:var(--turq);border-bottom-color:var(--turq)}
+.ph{font-family:var(--mono);font-size:.875rem}
+
+/* ============ АДАПТАЦИЯ ============ */
+@media(max-width:1080px){
+  .top__nav{display:none}
+  .hero__copy{
+    position:static;transform:none;translate:none;width:auto;
+    padding-inline:var(--gut);text-align:left;max-width:34rem;
+  }
+  .hero__stage{
+    grid-template-rows:1fr auto;align-content:center;gap:clamp(18px,3vw,32px);
+    padding-block:84px 56px;place-items:center start;
+  }
+  .draft{max-height:46svh;width:100%;justify-self:center}
+  .hero__rail{height:320vh}
+}
+@media(max-width:860px){
+  .nest{
+    grid-template-columns:1fr 1fr;
+    grid-template-areas:
+      "a a"
+      "b c"
+      "d w";
+  }
+  .chain__steps{grid-template-columns:repeat(2,1fr);border-top:0}
+  .chain__steps li{border-top:1px solid var(--rule-2);padding-block:18px 20px}
+  .chain__steps li::before,.chain__steps li:last-child::after{display:none}
+  .chain__track{padding-top:0}
+  .chain__span{position:static;width:auto;height:auto;border-top:0;margin-bottom:26px}
+  .chain__span::before,.chain__span::after{display:none}
+  .chain__span-label{
+    position:static;transform:none;display:inline-block;
+    padding:9px 14px;border:1px dashed var(--turq);background:transparent;
+    white-space:normal;max-width:100%;
+  }
+}
+@media(max-width:760px){
+  /* подпись листа не влезает в разрыв рамки, поднимаем её над рамкой */
+  .sheet__label{
+    position:static;background:none;padding-inline:0;
+    margin-bottom:12px;flex-wrap:wrap;gap:8px;
+  }
+}
+@media(max-width:620px){
+  .nest{grid-template-columns:1fr;grid-template-areas:"a" "b" "c" "d" "w"}
+  .foot__data{grid-template-columns:1fr}
+  .hero__scroll{display:none}
+}
+
+/* ============ СНИЖЕННОЕ ДВИЖЕНИЕ ============ */
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  /* чертёж показывается сразу собранным, деталь остаётся на месте */
+  .d-room .ln,.d-room .ln-thin,.d-base .ln,.d-base .ln-thin,
+  .d-upper .ln,.d-upper .ln-thin,.d-piece__body .ln,.d-piece__body .ln-thin,.d-counter .ln-edge{
+    animation:none !important;stroke-dasharray:none;stroke-dashoffset:0;
+  }
+  .d-dims{animation:none !important;opacity:1}
+  .d-piece__slot{animation:none !important;opacity:1}
+  .d-piece__body{animation:none !important;transform:none;opacity:1}
+  *,*::before,*::after{transition-duration:.01ms !important;animation-duration:.01ms !important}
+}

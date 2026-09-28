@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Каталог референсов — разбор по семьям стилей</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Lora:ital@1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7F4EF; --bg-alt:#EDE7DC; --surface:#FFFFFF;
+  --ink:#1C1A16; --ink-2:#4E4840; --ink-3:#6F6960; --ink-4:#8B847A;
+  --line:#DCD5C9;
+  --teal-900:#0E4A45; --teal-700:#12655D; --teal-500:#1E8F83; --teal-100:#DCEAE7;
+  --dark-ink:#EDF2F0; --dark-ink-2:#9FB5B1;
+  --wood:#B08356;
+  --focus:#2B6CB0;
+  --font-ui:"Onest","Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-accent:"Lora","PT Serif",Georgia,serif;
+  --max-w:1280px; --gutter:clamp(20px,4vw,48px);
+  --r-sm:4px; --r-md:12px; --r-pill:999px;
+  --ease:cubic-bezier(.22,.61,.36,1); --dur:240ms;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--ink-2);
+  font:400 16px/1.6 var(--font-ui);
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:var(--max-w);margin-inline:auto;padding-inline:var(--gutter)}
+em{font-family:var(--font-accent);font-style:italic;font-weight:400}
+
+/* ---------- шапка ---------- */
+.hero{background:var(--teal-900);color:var(--dark-ink);padding-block:clamp(48px,8vw,104px)}
+.hero .eyebrow{color:var(--dark-ink-2)}
+.eyebrow{
+  font-size:.75rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 16px
+}
+h1{
+  font-weight:800;font-size:clamp(2.25rem,5.5vw,4rem);line-height:1.02;
+  letter-spacing:-.03em;margin:0 0 20px;color:var(--dark-ink)
+}
+.hero p{max-width:60ch;color:var(--dark-ink-2);margin:0 0 32px}
+.hero-links{display:flex;flex-wrap:wrap;gap:12px}
+.hero-links a{
+  display:inline-block;padding:11px 20px;border-radius:var(--r-pill);
+  font-size:.875rem;font-weight:600;text-decoration:none;
+  background:rgba(237,242,240,.1);color:var(--dark-ink);
+  border:1px solid rgba(237,242,240,.22);transition:background var(--dur) var(--ease)
+}
+.hero-links a:hover{background:rgba(237,242,240,.2)}
+
+/* ---------- навигация по семьям ---------- */
+.nav{
+  position:sticky;top:0;z-index:20;background:rgba(247,244,239,.92);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)
+}
+.nav-inner{display:flex;gap:8px;overflow-x:auto;padding-block:14px;scrollbar-width:thin}
+.nav a{
+  white-space:nowrap;padding:8px 15px;border-radius:var(--r-pill);
+  font-size:.8125rem;font-weight:600;text-decoration:none;
+  color:var(--ink-2);border:1px solid var(--line);background:var(--surface);
+  transition:color var(--dur) var(--ease),border-color var(--dur) var(--ease)
+}
+.nav a:hover{color:var(--teal-700);border-color:var(--teal-700)}
+.nav a b{color:var(--ink-4);font-weight:600;margin-left:5px}
+
+/* ---------- семья ---------- */
+.family{padding-block:clamp(56px,8vw,112px);border-bottom:1px solid var(--line)}
+.family:nth-child(even){background:var(--bg-alt)}
+.family-head{display:grid;grid-template-columns:1fr;gap:40px;margin-bottom:48px}
+@media(min-width:900px){.family-head{grid-template-columns:1.1fr .9fr;gap:64px}}
+h2{
+  font-weight:700;font-size:clamp(1.75rem,3.4vw,2.75rem);line-height:1.1;
+  letter-spacing:-.02em;margin:0 0 16px;color:var(--ink)
+}
+.family-head > div > p{max-width:58ch;margin:0 0 24px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:0;padding:0;list-style:none}
+.chips li{
+  font-size:.75rem;font-weight:500;padding:6px 11px;border-radius:var(--r-pill);
+  background:var(--teal-100);color:var(--teal-900)
+}
+.recipe{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:clamp(20px,3vw,32px)
+}
+.recipe h3{
+  font-size:.75rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 18px
+}
+.recipe ol{margin:0;padding-left:1.15em;display:grid;gap:11px}
+.recipe li{font-size:.9375rem;line-height:1.55}
+.recipe li::marker{color:var(--teal-700);font-weight:700}
+
+/* ---------- карточки кадров ---------- */
+.cards{display:grid;grid-template-columns:1fr;gap:28px}
+@media(min-width:760px){.cards{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1180px){.cards{grid-template-columns:repeat(3,1fr)}}
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+  overflow:hidden;display:flex;flex-direction:column;
+  transition:box-shadow var(--dur) var(--ease),transform var(--dur) var(--ease)
+}
+.card:hover{box-shadow:0 8px 24px rgba(28,26,22,.08);transform:translateY(-2px)}
+.shot{
+  position:relative;display:block;aspect-ratio:4/3;background:var(--bg-alt);
+  overflow:hidden;border-bottom:1px solid var(--line)
+}
+.shot img{
+  width:100%;height:100%;object-fit:cover;object-position:top center;display:block;
+  transition:transform var(--dur) var(--ease)
+}
+.shot:hover img{transform:scale(1.02)}
+.num{
+  position:absolute;top:12px;left:12px;z-index:2;
+  min-width:30px;height:30px;padding:0 9px;border-radius:var(--r-pill);
+  background:var(--ink);color:#fff;font-size:.8125rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums
+}
+.card-body{padding:22px;display:flex;flex-direction:column;gap:16px;flex:1}
+.card-title{font-size:1.125rem;font-weight:700;color:var(--ink);margin:0;line-height:1.25}
+.card-kind{font-size:.8125rem;color:var(--ink-3);margin:4px 0 0}
+dl{margin:0;display:grid;gap:13px}
+dt{
+  font-size:.6875rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-4);margin-bottom:3px
+}
+dd{margin:0;font-size:.875rem;line-height:1.5;color:var(--ink-2)}
+.sw{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.sw span{
+  width:30px;height:30px;border-radius:var(--r-sm);border:1px solid rgba(28,26,22,.13);
+  display:block
+}
+a:focus-visible,.shot:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+
+/* ---------- подвал ---------- */
+footer{background:var(--bg-alt);padding-block:56px;color:var(--ink-3);font-size:.875rem}
+footer p{max-width:70ch;margin:0 0 10px}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Разбор референсов</p>
+    <h1>14 скриншотов,<br>сведённых в <em>пять</em> семей стилей</h1>
+    <p>Каждый кадр разобран по шести полям: тип, стиль, шрифты, палитра, текстуры, пространство и то, чем держится композиция. Дальше кадры сгруппированы в семьи — у каждой свой словарь и рецепт сборки.</p>
+    <div class="hero-links">
+      <a href="style-analysis.md">Разбор по кадрам (.md)</a>
+      <a href="design-system.md">Дизайн-система проекта (.md)</a>
+      <a href="../references/">Папка со скриншотами</a>
+    </div>
+  </div>
+</header>
+
+<nav class="nav"><div class="wrap nav-inner" id="nav"></div></nav>
+
+<main id="main"></main>
+
+<footer>
+  <div class="wrap">
+    <p>Цвета в палитрах сняты на глаз по скриншотам — это ориентир для подбора, а не пипетка. Гарнитуры определены по классу рисунка: точные названия по растровому скриншоту установить нельзя.</p>
+    <p>Кадр 12 попадает в две семьи: по контенту это технический чертёж, по типографике — швейцарский плакат.</p>
+  </div>
+</footer>
+
+<script>
+const FAMILIES = [
+  {
+    id: "warm-minimal",
+    name: "Тёплый редакторский минимализм",
+    lead: "Самая многочисленная и самая согласованная семья в наборе. Держится не приёмами, а их отсутствием: нет акцентного цвета, нет теней, нет разделителей. Работает только при честной съёмке.",
+    keywords: ["warm minimal","editorial","cream","greige","taupe","quiet luxury","negative space","oversized wordmark","letter-spaced caps","bento grid","matte texture","muted palette","photography-led","flat cards","no accent colour","slow rhythm"],
+    recipe: [
+      "Фон кремовый или песочный, <b>не белый</b>. Белый оставить только для карточек.",
+      "Акцентного цвета нет вовсе. Цвет приходит из фотографии дерева и тканей.",
+      "Одна гарнитура. Вордмарк или заголовок — в 6–10 раз крупнее интерфейсного текста.",
+      "Надзаголовки — капс 12 px с разрядкой 0.14em, цвет приглушённый.",
+      "Фото в край в герое, дальше плитки разного размера с крупными внутренними полями.",
+      "Карточки плоские: граница 1 px, радиус 12, тень только на ховере.",
+      "Между секциями 100–160 px пустоты. Линий-разделителей нет.",
+      "Текстуры только матовые: штукатурка, лён, букле, шпон. Никакого глянца."
+    ],
+    shots: [1,4,5,7]
+  },
+  {
+    id: "display",
+    name: "Дисплейный контраст",
+    lead: "Швейцарская школа в вебе. Весь эффект держится на одном разрыве: гигантский текст против 12 px и ничего между ними. Промежуточные кегли этот приём убивают.",
+    keywords: ["swiss typography","display type","tight tracking","type as image","full-bleed","black on off-white","condensed caps","italic serif accent","overlap","grid tension","stat row","brutal scale jump"],
+    recipe: [
+      "Одно слово или одна цифра занимает 60–90 % ширины экрана.",
+      "Трекинг отрицательный: −0.02…−0.04em. Интерлиньяж 0.9–1.0.",
+      "Всё остальное — 12–14 px. Промежуточных кеглей нет, в этом весь приём.",
+      "Дисплейный текст <b>перекрывает</b> изображение и обрезается краем кадра.",
+      "Курсивная антиква на 1–2 слова как единственное смягчение — приём кадра 2.",
+      "Цвет: чёрный на светло-сером. Цветного акцента нет.",
+      "Внизу — полоса из трёх чисел с тонкими разделителями, она заземляет композицию."
+    ],
+    shots: [2,12]
+  },
+  {
+    id: "retail",
+    name: "Чистый ритейл-каталог",
+    lead: "Семья, где дизайн уходит на второй план, а держит всё дисциплина съёмки. Одинаковое кадрирование девяти фото в кадре 13 делает для сетки больше, чем любая типографика.",
+    keywords: ["ecommerce grid","product card","price-first","filter row","pagination","consistent crop","studio seamless","wishlist icon","circular add button","trust bar","category bento","promo band"],
+    recipe: [
+      "Сетка 3 в ряд на десктопе, 2 на планшете, 1–2 на телефоне. Карточки одной высоты.",
+      "Все фото сняты при одном свете и кадрированы одинаково — это держит сетку сильнее любой типографики.",
+      "Карточка: фото 4:3 → название → мелкая строка характеристик → цена → действие.",
+      "Цена видна всегда, крупнее подписи.",
+      "Круглая кнопка «+» на фото внизу справа, иконка избранного вверху справа.",
+      "Над сеткой — строка табов и фильтр, под сеткой — пагинация.",
+      "Декор минимальный. Стикеры «−40 %» и рукописные стрелки из кадра 14 — то, что отличает шаблон от магазина, который выглядит дорого."
+    ],
+    shots: [13,14]
+  },
+  {
+    id: "dark-craft",
+    name: "Тёмный крафт",
+    lead: "Самая рискованная семья: превращается в сток за один шаг. Спасается только честной съёмкой и одной сильной идеей вместо оформления — как нога слона на диване в кадре 8.",
+    keywords: ["dark craft","workshop","moody lighting","amber glow","gold CTA","serif headline","condensed caps","vignette","rough timber","tool wall","heavy shadow","centered stack","concept ad"],
+    recipe: [
+      "Фон тёмный: коричневый #3A2A1C или зелёный #0E3B32.",
+      "Один тёплый источник света в кадре, виньетка по краям.",
+      "Заголовок антиквой, подзаголовок капсом в разрядку, иногда скрипт третьей строкой.",
+      "Акцент золотой или янтарный, только на кнопках.",
+      "Композиция центрированная, текст поверх фото.",
+      "Фактура обязательна: пиленый брус, стружка, инструмент, стёганая кожа.",
+      "Слабое место: лента из четырёх одинаковых иконобоксов (кадр 9) и стоковый реквизит превращают семью в шаблон.",
+      "Кадр 8 показывает, чем семья спасается: <b>одна идея вместо оформления</b>."
+    ],
+    shots: [3,6,8,9]
+  },
+  {
+    id: "technical",
+    name: "Технический чертёж",
+    lead: "Не веб-дизайн, а контент: что показывать, а не как верстать. Для производителя корпусной мебели это самый сильный из доступных материалов — он у него уже есть.",
+    keywords: ["technical drawing","dimension lines","callouts","orthographic","blueprint","measured drawing","exploded view","cabinet plan","millimetre spec","paper texture","pencil render","annotation"],
+    recipe: [
+      "Объект один, показан целиком, без среды и без стилизованного интерьера.",
+      "Поверх — выносные размеры: тонкая линия, простые стрелки, подпись в рамке.",
+      "Единицы подписаны явно и одинаково: «195 см», «60 см».",
+      "Цвет служебных линий контрастный к объекту — красный (кадр 10) или синий (кадр 11).",
+      "Заливки плоскостей — два тона дерева, больше цветов не нужно.",
+      "Подложка светлая, бумажная. Тени мягкие или отсутствуют.",
+      "Размеры образуют вторую сетку поверх рисунка — именно она держит композицию."
+    ],
+    shots: [10,11,12]
+  }
+];
+
+const SHOTS = {
+  1:{name:"Tilesuite",kind:"Сайт производителя керамогранита, первый экран",
+     style:"Тихий тёплый минимализм, фото-как-фон",
+     fonts:"Тонкий нео-гротеск. Вордмарк в разрядку ~0.35em, светлое начертание",
+     palette:[["#A89C90","греж"],["#C9C0B6","тёплый серый"],["#FFFFFF","белый текст"],["#6B5744","дерево балок"]],
+     texture:"Матовая штукатурка, плетёный ротанг абажура, лён, крупноформатная плита",
+     space:"Интерфейса почти нет: меню и языки — тонкой строкой, остальное отдано фото",
+     comp:"Держится вордмарком по нижней границе кадра: он работает подписью под «картиной» и прижимает всю сцену"},
+  2:{name:"«Hotle», архитектура",kind:"Сайт архитектурного бюро / модульных домов",
+     style:"Дисплейный контраст, швейцарская школа в вебе",
+     fonts:"Тяжёлый гротеск в дисплее, очень плотный трекинг. Курсивная антиква на отдельные слова",
+     palette:[["#111111","почти чёрный"],["#EDEDED","светло-серый фон"],["#E08A3C","свет окон"],["#2B2622","обугленное дерево"]],
+     texture:"Вертикальная деревянная обшивка, стекло, туман, фальцевая кровля",
+     space:"Воздух создаётся не полями, а перепадом кегля: гигант против 12 px",
+     comp:"Заголовок заезжает на фото и обрезается краем кадра. Полоса 120+ / 15+ / 5+ ставит точку"},
+  3:{name:"DHI",kind:"Многостраничный шаблон мебельного магазина",
+     style:"Тёмный интерьерный шаблон, единственный цветной в наборе",
+     fonts:"Универсальный геометрический гротеск (класс Poppins / Montserrat), без характера",
+     palette:[["#0E3B32","глубокий зелёный"],["#1E7A6E","бирюзовый акцент"],["#EFE8DC","кремовый текст"],["#B08356","дерево"]],
+     texture:"Велюр обивки, латунь, растения, стеновые панели",
+     space:"Плотное: блоки идут встык, воздуха мало",
+     comp:"Чередование тёмных полос и карточных лент. Всё симметрично, из-за чего читается как шаблон"},
+  4:{name:"AURA",kind:"Сайт мебельного бренда, главная",
+     style:"Тёплый редакторский минимализм, бенто",
+     fonts:"Контрастная антиква в логотипе с широкой разрядкой. Мелкий гротеск в интерфейсе",
+     palette:[["#F2EDE4","слоновая кость"],["#C9BCA9","тауп"],["#A8A096","тёплый серый"],["#DED3C2","шпон"]],
+     texture:"Букле, травертин, дубовый шпон, мягкие ткани",
+     space:"Плитки дышат: внутренние поля крупнее, чем зазоры между ними",
+     comp:"Бенто-сетка из плиток разного размера. Глаз ведёт перепад площадей, а не линии"},
+  5:{name:"NORDIQ",kind:"Бренд-борд (презентация айдентики), не сайт",
+     style:"Тёплый минимализм в подаче бренда",
+     fonts:"Тяжёлый геометрический гротеск в вордмарке. Крошечный капс в разрядку, абзац выключен по формату",
+     palette:[["#6E5A48","коричневая плашка"],["#EFE7DA","кремовый текст"],["#FFFFFF","снег"],["#8A6A4A","спил дерева"]],
+     texture:"Спил дерева с трещинами как подложка всего кадра — главный приём. Снег, матовый картон",
+     space:"Внутри плашки воздуха много, сама плашка лежит на текстуре с полями",
+     comp:"Вертикальное деление: цветная панель слева, фото справа, обе в рамке текстурного фона"},
+  6:{name:"Woodworking",kind:"Постер / соцсеть, мастерская",
+     style:"Тёмный крафт, ностальгия",
+     fonts:"Жирный конденсед капс + рукописный скрипт на второй строке + капс в разрядку в перечне",
+     palette:[["#3A2A1C","тёмно-коричневый"],["#C89A5B","янтарный свет"],["#E8DCC8","кремовый текст"],["#5A6B3A","зелень в окне"]],
+     texture:"Состаренный верстак, стружка, сталь инструментов, пыльный свет из окна",
+     space:"Текст стоит в верхней трети, низ отдан предметной сцене",
+     comp:"Центрированный стек с виньеткой. Держится светом: взгляд идёт от окна к доске на верстаке"},
+  7:{name:"form&wood",kind:"Сайт мебельной мастерской, главная",
+     style:"Тёплый минимализм с жирной дисплейной подачей",
+     fonts:"Очень тяжёлый геометрический гротеск в вордмарке, плотный трекинг. Обычный гротеск в интерфейсе",
+     palette:[["#F1EDE6","кремовый"],["#111111","чёрный"],["#171512","тёмная секция"],["#A9764B","орех"]],
+     texture:"Плетёное полотно (cane), орех, льняное бельё, матовый чёрный",
+     space:"Щедрые поля на светлом, нулевые на фото. Между секциями крупные паузы",
+     comp:"Вордмарк в левом верхнем углу как якорь, справа миниатюры. Дальше нумерованные секции «01 / About us» и тёмная лента коллекции"},
+  8:{name:"ekome",kind:"Рекламный креатив (соцсеть), не веб-макет",
+     style:"Концептуальный плакат, коммерческая подача",
+     fonts:"Контрастная антиква в слове «Strong» + гротеск капсом в подписи",
+     palette:[["#6B4A33","коричневый"],["#8A6547","градиент"],["#EDE3D2","кремовый диван"],["#D9A03C","золото логотипа"]],
+     texture:"Кожа слона против стёганой обивки — весь смысл кадра в столкновении фактур",
+     space:"Объект в центре, поля рамкой, текст прижат к низу",
+     comp:"Держится одной идеей, а не вёрсткой: нога слона на диване = прочность. Радиальное свечение фокусирует взгляд"},
+  9:{name:"Craftsmanship in Every Detail",kind:"Лендинг столярных услуг",
+     style:"Тёмный крафт, шаблонная сборка",
+     fonts:"Переходная антиква в заголовке, гротеск в тексте",
+     palette:[["#3B2A1E","тёмно-коричневый"],["#E8DCCB","бежевая секция"],["#B8813C","золотой CTA"],["#7A5836","брус"]],
+     texture:"Грубо пиленый брус, перфорированная панель для инструмента, сталь",
+     space:"Плотное, карточки почти без внутренних полей",
+     comp:"Фото в край + лента из четырёх одинаковых иконобоксов внахлёст, ниже три карточки услуг. Самая узнаваемая шаблонная схема в наборе"},
+  10:{name:"Чертёж кухни с размерами",kind:"Техническая иллюстрация, не веб",
+     style:"Технический чертёж от руки",
+     fonts:"Рукописные аннотации, цифры без засечек",
+     palette:[["#F4F2EE","бумага"],["#C99A5C","дуб"],["#5A5A5A","столешница"],["#D64545","выносные линии"]],
+     texture:"Карандаш и маркер по бумаге, лёгкая штриховка",
+     space:"Воздух только по краям, вся площадь под объект и выноски",
+     comp:"Держится выносными размерами: 340, 130, 80, 60 см образуют вторую, служебную сетку поверх рисунка"},
+  11:{name:"Кухня в разрезе, синие выноски",kind:"Техническая иллюстрация",
+     style:"Технический чертёж, аккуратнее и чище, чем кадр 10",
+     fonts:"Подписи гротеском в рамках-плашках",
+     palette:[["#F6F4F0","бумага"],["#D8BC98","светлое дерево"],["#E4E2DE","мрамор"],["#2F80ED","синие стрелки"]],
+     texture:"Карандашная растушёвка, мраморный фартук",
+     space:"Равномерно заполненный кадр, дыхание за счёт светлой бумаги",
+     comp:"Одна точка схода + размеры по всем плоскостям: 93, 75, 58, 40, 31, 10 см"},
+  12:{name:"PLANOS MUEBLES DE MELAMINA",kind:"Обложка сборника чертежей",
+     style:"Двойной: по контенту технический чертёж, по типографике швейцарский плакат",
+     fonts:"Ультражирный конденсед капс (класс Helvetica Black / Impact), три строки без интерлиньяжа",
+     palette:[["#FFFFFF","бумага"],["#000000","текст"],["#E0B87C","светлый дуб"],["#8FA6C4","тонкая синяя линия"]],
+     texture:"Линейная графика ортогональных проекций, «обои» из мелких видов мебели",
+     space:"Нулевые поля: рисунки идут в край, текст лежит поверх",
+     comp:"Контраст «мелкий равномерный паттерн против трёх огромных слов»"},
+  13:{name:"lano",kind:"Страница каталога мебельного магазина",
+     style:"Чистый ритейл, минимум декора",
+     fonts:"Один мелкий аккуратный гротеск на всё, логотип строчными",
+     palette:[["#FFFFFF","белый"],["#F2F2F2","светло-серый"],["#B5533A","ржавый"],["#6B6B3A","олива"]],
+     texture:"Студийный бесшовный фон, матовые ткани, деревянные ножки",
+     space:"Крупный отступ между строками сетки, подписи прижаты к карточке",
+     comp:"Сплит-герой (текст слева, объект справа) + строгая сетка 3×3. Держится одинаковым кадрированием всех девяти фото"},
+  14:{name:"Home&Kitchen Finds",kind:"Шаблон интернет-магазина товаров для дома",
+     style:"Тёплый ритейл с декоративными надстройками",
+     fonts:"Скриптовый логотип + гротеск в интерфейсе + акцентное слово другим цветом",
+     palette:[["#FBF6EF","кремовый"],["#C86A2B","янтарный акцент"],["#4A3728","коричневый текст"],["#9AA378","шалфей"]],
+     texture:"Бумага, керамика, ротанг, лён",
+     space:"Больше декора, чем воздуха: стикеры, звёздочки, рукописные стрелки",
+     comp:"Сплит-герой → бенто-пара → лента товаров → промо-полоса → редакторская строка → полоса доверия"}
+};
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const field = (label, value) => `<div><dt>${label}</dt><dd>${esc(value)}</dd></div>`;
+
+function cardHTML(n){
+  const s = SHOTS[n];
+  const swatches = s.palette
+    .map(([hex,label]) => `<span style="background:${hex}" title="${esc(label)} ${hex}"></span>`)
+    .join("");
+  const names = s.palette.map(([hex,label]) => `${label} ${hex}`).join(" · ");
+  return `
+  <article class="card">
+    <a class="shot" href="../references/${n}.png" target="_blank" rel="noopener"
+       aria-label="Открыть скриншот ${n} — ${esc(s.name)} — в полном размере">
+      <span class="num">${n}</span>
+      <img src="../references/${n}.png" alt="Скриншот ${n}: ${esc(s.name)}" loading="lazy">
+    </a>
+    <div class="card-body">
+      <div>
+        <h3 class="card-title">${esc(s.name)}</h3>
+        <p class="card-kind">${esc(s.kind)}</p>
+      </div>
+      <dl>
+        ${field("Стиль", s.style)}
+        ${field("Шрифты", s.fonts)}
+        <div>
+          <dt>Палитра</dt>
+          <dd>${esc(names)}<div class="sw">${swatches}</div></dd>
+        </div>
+        ${field("Текстуры", s.texture)}
+        ${field("Пространство", s.space)}
+        ${field("Чем держится", s.comp)}
+      </dl>
+    </div>
+  </article>`;
+}
+
+document.getElementById("main").innerHTML = FAMILIES.map((f,i) => `
+  <section class="family" id="${f.id}">
+    <div class="wrap">
+      <div class="family-head">
+        <div>
+          <p class="eyebrow">Семья ${["I","II","III","IV","V"][i]} · ${f.shots.length} ${f.shots.length===1?"кадр":f.shots.length<5?"кадра":"кадров"}</p>
+          <h2>${esc(f.name)}</h2>
+          <p>${esc(f.lead)}</p>
+          <ul class="chips">${f.keywords.map(k => `<li>${esc(k)}</li>`).join("")}</ul>
+        </div>
+        <div class="recipe">
+          <h3>Рецепт сборки</h3>
+          <ol>${f.recipe.map(r => `<li>${r}</li>`).join("")}</ol>
+        </div>
+      </div>
+      <div class="cards">${f.shots.map(cardHTML).join("")}</div>
+    </div>
+  </section>`).join("");
+
+document.getElementById("nav").innerHTML = FAMILIES
+  .map(f => `<a href="#${f.id}">${esc(f.name)}<b>${f.shots.length}</b></a>`).join("");
+</script>
+</body>
+</html>
