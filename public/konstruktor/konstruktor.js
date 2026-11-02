@@ -2,8 +2,8 @@
    Всё это работает и без 3D: если сцена не загрузилась, размеры и цена
    остаются рабочими. */
 import {
-  TYPES, COLORS, SECTION_MIN, DRYER_CAB, CORNER_CAB, equalSections, upperDefault, buildModel, estimate, describe
-} from './model.js?v=10';
+  TYPES, COLORS, SECTION_MIN, KITCHEN_MIN, DRYER_CAB, CORNER_CAB, equalSections, upperDefault, buildModel, estimate, describe
+} from './model.js?v=12';
 
 const CONTACTS = { sister: 'BintApandi', brother: 'AAA116Z' };
 const SHORT = {
@@ -84,6 +84,8 @@ const GROUPS = {
 };
 
 function groups(type) { return GROUPS[type] || []; }
+/* самый узкий шкаф или отсек в группе */
+function minOf(g) { return g.key === 'sw' ? SECTION_MIN : KITCHEN_MIN; }
 function activeGroups(type, s) { return groups(type).filter((g) => !g.when || g.when(s)); }
 
 /* первый верхний шкаф под сушилку и последний угловой шкаф не меняются */
@@ -100,14 +102,14 @@ function defaultSections(g, s) {
     : equalSections(s[g.total], s.cols);
 }
 
-function fitList(sw, w, cols) {
+function fitList(sw, w, cols, min) {
   if (!Array.isArray(sw) || sw.length !== cols) return equalSections(w, cols);
   const sum = sw.reduce((a, b) => a + b, 0);
   if (sum === w) return sw;
   /* общая ширина изменилась: сохраняем пропорции */
-  const out = sw.map((x) => Math.max(SECTION_MIN, Math.round((x * w) / sum / SECTION_STEP) * SECTION_STEP));
+  const out = sw.map((x) => Math.max(min, Math.round((x * w) / sum / SECTION_STEP) * SECTION_STEP));
   out[cols - 1] = w - out.slice(0, -1).reduce((a, b) => a + b, 0);
-  return out.every((x) => x >= SECTION_MIN) ? out : equalSections(w, cols);
+  return out.every((x) => x >= min) ? out : equalSections(w, cols);
 }
 
 function fitGroup(g, s) {
@@ -122,9 +124,9 @@ function fitGroup(g, s) {
       return defaultSections(g, s);
     }
     const fixed = (head.length ? DRYER_CAB : 0) + (tail.length ? CORNER_CAB : 0);
-    return [...head, ...fitList(arr.slice(a, b), total - fixed, b - a), ...tail];
+    return [...head, ...fitList(arr.slice(a, b), total - fixed, b - a, minOf(g)), ...tail];
   }
-  return fitList(arr, total, s.cols);
+  return fitList(arr, total, s.cols, minOf(g));
 }
 
 function neighbourOf(g, s, i) {
@@ -145,7 +147,7 @@ function syncGroupDom(g, s) {
     const r = el.fields.querySelector(`[data-secr="${secId(g, i)}"]`);
     const nInput = el.fields.querySelector(`[data-sec="${secId(g, i)}"]`);
     if (r) {
-      r.max = v + s[g.key][neighbourOf(g, s, i)] - SECTION_MIN;
+      r.max = v + s[g.key][neighbourOf(g, s, i)] - minOf(g);
       r.value = v;
       paintRange(r);
     }
@@ -161,7 +163,7 @@ function setSection(g, i, raw, source) {
   const pair = arr[i] + arr[j];
   let v = Math.round(Number(raw) / SECTION_STEP) * SECTION_STEP;
   if (!Number.isFinite(v)) v = arr[i];
-  v = Math.min(pair - SECTION_MIN, Math.max(SECTION_MIN, v));
+  v = Math.min(pair - minOf(g), Math.max(minOf(g), v));
   arr[i] = v;
   arr[j] = pair - v;
   [i, j].forEach((k) => {
@@ -200,7 +202,7 @@ function readUrl() {
     const raw = q.get(g.param);
     if (raw === null) return;
     const list = raw.split(',').map(Number);
-    const ok = list.length === s.cols && list.every((x) => Number.isFinite(x) && x >= SECTION_MIN)
+    const ok = list.length === s.cols && list.every((x) => Number.isFinite(x) && x >= minOf(g))
       && list.reduce((a, b) => a + b, 0) === s[g.total]
       && (!fixedFirst(g, s) || list[0] === DRYER_CAB)
       && (!fixedLast(g, s) || list[s.cols - 1] === CORNER_CAB);
@@ -223,7 +225,7 @@ let view = null;
 
 async function startScene() {
   try {
-    const { createScene } = await import('./scene.js?v=10');
+    const { createScene } = await import('./scene.js?v=12');
     view = createScene(el.stage, el.labels);
     el.status.hidden = true;
     refresh({ refit: true });
@@ -320,10 +322,10 @@ function sectionsHtml(g, s) {
       </div>`;
     }
     const j = neighbourOf(g, s, i);
-    const max = v + s[g.key][j] - SECTION_MIN;
+    const max = v + s[g.key][j] - minOf(g);
     const id = secId(g, i);
     return `<div class="kf__sec">
-      ${sizeHtml(`data-sec="${id}"`, `data-secr="${id}"`, `sw-${g.key}-${i}`, `${tr(g.item)} ${i + 1}`, v, SECTION_MIN, max, SECTION_STEP)}
+      ${sizeHtml(`data-sec="${id}"`, `data-secr="${id}"`, `sw-${g.key}-${i}`, `${tr(g.item)} ${i + 1}`, v, minOf(g), max, SECTION_STEP)}
     </div>`;
   }).join('');
   const dryerNote = (free ? ` ${tr('Шкаф под сушилку фиксированный: внутри него ровно 80 см.')}` : '')
@@ -483,7 +485,7 @@ el.fields.addEventListener('input', (e) => {
     if (p) {
       const v = Number(t.value);
       const pair = s[p.g.key][p.i] + s[p.g.key][neighbourOf(p.g, s, p.i)];
-      if (v >= SECTION_MIN && v <= pair - SECTION_MIN) setSection(p.g, p.i, v, 'typing');
+      if (v >= minOf(p.g) && v <= pair - minOf(p.g)) setSection(p.g, p.i, v, 'typing');
     }
   }
 });

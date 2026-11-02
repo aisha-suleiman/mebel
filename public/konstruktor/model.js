@@ -32,6 +32,8 @@ const PL = 80;         /* цоколь шкафа */
 
 /* Отсеки шкафа: самый узкий допустимый и деление поровну */
 export const SECTION_MIN = 300;
+/* шкаф кухни не уже 45 см (заказчик) */
+export const KITCHEN_MIN = 450;
 export function equalSections(w, cols) {
   const base = Math.floor(w / cols / 10) * 10;
   const out = Array(cols).fill(base);
@@ -48,9 +50,9 @@ export const TYPES = {
         options: { pryam: 'Прямая', ugol: 'Угловая' } },
       /* ряды задаются отдельно: нижние и верхние шкафы могут отличаться по
          ширине и глубине. Без нижних шкафов поля нижнего ряда не нужны.
-         minFn: каждый шкаф не уже SECTION_MIN, шкаф под сушилку шире. */
+         minFn: каждый шкаф не уже KITCHEN_MIN, шкаф под сушилку шире. */
       w: { kind: 'size', label: 'Ширина нижних шкафов', min: 1200, max: 4200, step: 50, def: 2400,
-        minFn: (s) => s.cols * SECTION_MIN, when: (s) => s.nizh === 'da' },
+        minFn: (s) => s.cols * KITCHEN_MIN, when: (s) => s.nizh === 'da' },
       w2: { kind: 'size', label: 'Вторая сторона нижних шкафов', min: 1200, max: 3000, step: 50, def: 1800,
         when: (s) => s.forma === 'ugol' && s.nizh === 'da' },
       d: { kind: 'size', label: 'Глубина нижних шкафов', min: 350, max: 650, step: 10, def: 600,
@@ -59,7 +61,7 @@ export const TYPES = {
         when: (s) => s.nizh === 'da' },
       wUp: { kind: 'size', label: 'Ширина верхних шкафов', min: 1200, max: 4200, step: 50, def: 2600,
         minFn: (s) => (s.susilka === 'da' ? DRYER_CAB : 0) + (s.forma === 'ugol' ? CORNER_CAB : 0)
-          + (s.cols - (s.susilka === 'da' ? 1 : 0) - (s.forma === 'ugol' ? 1 : 0)) * SECTION_MIN },
+          + (s.cols - (s.susilka === 'da' ? 1 : 0) - (s.forma === 'ugol' ? 1 : 0)) * KITCHEN_MIN },
       w2Up: { kind: 'size', label: 'Вторая сторона верхних шкафов', min: 1200, max: 3000, step: 50, def: 1800,
         when: (s) => s.forma === 'ugol' },
       dUp: { kind: 'size', label: 'Глубина верхних шкафов', min: 300, max: 450, step: 10, def: 350 },
@@ -79,7 +81,7 @@ export const TYPES = {
     label: 'Шкаф',
     fields: {
       w: { kind: 'size', label: 'Ширина', min: 600, max: 2800, step: 10, def: 2000 },
-      h: { kind: 'size', label: 'Высота', min: 1500, max: 2700, step: 10, def: 1800 },
+      h: { kind: 'size', label: 'Высота', min: 1000, max: 2700, step: 10, def: 1800 },
       d: { kind: 'size', label: 'Глубина', min: 350, max: 600, step: 10, def: 600 },
       cols: { kind: 'count', label: 'Отсеков', min: 1, max: 6, def: 2 },
       /* верхний предел зависит от числа отсеков: maxOf */
@@ -322,7 +324,7 @@ export function upperDefault(len, cols, dryer, corner) {
 
 function validWidths(sw, len, cols) {
   return Array.isArray(sw) && sw.length === cols
-    && sw.every((x) => x >= SECTION_MIN) && sw.reduce((a, b) => a + b, 0) === len;
+    && sw.every((x) => x >= KITCHEN_MIN) && sw.reduce((a, b) => a + b, 0) === len;
 }
 
 /* Нижний ряд: шкафы вдоль оси x, от from, ширины в массиве widths, с цоколем
