@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Конструктор мебели. Точка уюта</title>
+<meta name="description" content="Соберите кухню, шкаф, полки или стол под свои размеры и сразу увидите примерную стоимость. Точка уюта, Идлиб-Фуа.">
+<meta name="theme-color" content="#2B1E16">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/konstruktor/konstruktor.css">
+</head>
+<body class="kz-page">
+
+<header class="top">
+  <a class="mark" href="/" aria-label="Точка уюта, на главную">
+    <img class="mark__logo" src="/assets/logo.jpg" alt="" width="320" height="320" decoding="async">
+  </a>
+  <nav class="top__nav" aria-label="Разделы">
+    <a href="/#chto">Что делаем</a>
+    <a href="/#raboty">Работы</a>
+    <a href="/#srok">Сроки</a>
+  </nav>
+  <a class="btn btn--ghost top__cta" href="/#zayavka">Замер</a>
+</header>
+
+<main class="kz">
+  <div class="kz__head">
+    <h1>Соберите мебель под свои размеры</h1>
+  </div>
+
+  <div class="kz__stage" id="stage">
+    <p class="kz__status" id="stage-status">Загружаем модель</p>
+    <div class="kz__labels" id="labels" aria-hidden="true"></div>
+    <div class="kz__tools">
+      <button class="btn kz__tool" id="nodoors" type="button" aria-pressed="false" hidden>Без дверей</button>
+      <button class="btn kz__tool kz__doors" id="doors" type="button" aria-pressed="false" hidden>Открыть двери</button>
+    </div>
+  </div>
+
+  <form class="kz__panel" onsubmit="return false" aria-label="Настройки изделия">
+    <div class="kf">
+      <span class="kf__label">Что собираем</span>
+      <div class="choice" id="types" role="radiogroup" aria-label="Изделие"></div>
+    </div>
+
+    <div id="fields"></div>
+
+    <div class="kf">
+      <div class="kf__head">
+        <span class="kf__label">Цвет</span>
+        <span class="kf__hint" id="color-name"></span>
+      </div>
+      <div class="swatches" id="colors" role="radiogroup" aria-label="Цвет"></div>
+    </div>
+
+    <p class="kz__note" id="note"></p>
+
+    <section class="kz__send" id="send" aria-label="Отправка проекта" hidden>
+      <p class="kz__lead">Проект готов. Выберите, кому написать: текст подставится в сообщение сам.</p>
+      <pre class="notice__msg" id="send-text"></pre>
+      <div class="kz__acts">
+        <a class="btn btn--ghost" id="to-sister" href="https://t.me/BintApandi" target="_blank" rel="noopener">Я сестра</a>
+        <a class="btn btn--ghost" id="to-brother" href="https://t.me/AAA116Z" target="_blank" rel="noopener">Я брат</a>
+      </div>
+      <button class="kz__copy" id="copy" type="button">Скопировать текст</button>
+      <span class="kz__copied" id="copied" role="status"></span>
+    </section>
+
+    <div class="kz__bar">
+      <div>
+        <span class="kz__bar-label">Примерная стоимость</span>
+        <output class="kz__price mono" id="price" aria-live="polite"></output>
+      </div>
+      <button class="btn btn--solid" id="send-btn" type="button">Отправить проект</button>
+    </div>
+  </form>
+</main>
+
+<noscript><p class="wrap">Для конструктора нужен включённый JavaScript.</p></noscript>
+<script type="module" src="/konstruktor/konstruktor.js"></script>
+</body>
+</html>

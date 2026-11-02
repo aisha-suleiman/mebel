@@ -476,6 +476,8 @@ p{margin:0}
 
 /* ============ АДАПТАЦИЯ ============ */
 @media(max-width:1080px){
+  /* меню скрыто, кнопку некому отодвинуть вправо */
+  .top__cta{margin-left:auto}
   .top__nav{display:none}
   .hero__copy{
     position:static;transform:none;translate:none;width:auto;
@@ -534,3 +536,11 @@ p{margin:0}
   .d-piece__body{animation:none !important;transform:none;opacity:1}
   *,*::before,*::after{transition-duration:.01ms !important;animation-duration:.01ms !important}
 }
+
+/* Ссылка с плиты в конструктор */
+.plate__link{
+  display:inline-flex;align-items:center;min-height:44px;margin-top:4px;
+  color:var(--turq);font-size:.9375rem;
+  text-decoration:underline;text-underline-offset:4px;
+}
+.plate__link:hover{color:var(--turq-hi)}

@@ -1,0 +1,201 @@
+/* Конструктор. Основа взята из styles.css: цвета, кнопки, выбор пунктиром.
+   Сначала телефон: сцена прилипает сверху, цена и кнопка снизу,
+   настройки прокручиваются между ними. */
+
+/* display в правилах ниже иначе перебивает атрибут hidden */
+[hidden]{display:none!important}
+
+.kz-page{--head:61px}
+.kz-page .top{padding-block:8px}
+.kz-page .mark__logo{height:44px}
+
+.sr{
+  position:absolute;width:1px;height:1px;overflow:hidden;
+  clip-path:inset(50%);white-space:nowrap;
+}
+
+.kz{
+  padding-top:var(--head);
+  display:grid;grid-template-columns:minmax(0,1fr);
+}
+.kz__head{padding:16px var(--gut) 12px}
+.kz__head h1{font-size:clamp(1.35rem,3.4vw,2.4rem);line-height:1.1;letter-spacing:-.025em}
+
+/* ---------- Сцена ---------- */
+.kz__stage{
+  position:sticky;top:var(--head);z-index:5;
+  height:42vh;height:42svh;min-height:230px;
+  background:var(--ink);overflow:hidden;
+  border-block:1px solid var(--rule);
+}
+.kz__stage canvas{display:block;width:100%;height:100%;touch-action:none;outline:none}
+.kz__status{
+  position:absolute;inset:0;display:grid;place-items:center;
+  padding:20px;text-align:center;font-size:.875rem;color:var(--chalk-3);
+  align-content:center;gap:12px;
+}
+.kz__labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.dimlab{
+  position:absolute;left:0;top:0;
+  padding:1px 5px;font:400 .6875rem/1.3 var(--mono);
+  font-variant-numeric:tabular-nums;color:var(--chalk);
+  background:rgba(43,30,22,.82);
+}
+.kz__tools{
+  position:absolute;left:10px;bottom:10px;right:10px;
+  display:flex;flex-wrap:wrap;gap:8px;
+}
+.kz__tool{
+  min-height:44px;padding:0 16px;font-size:.8125rem;
+  color:var(--chalk);background:rgba(43,30,22,.86);border-color:var(--rule-2);
+}
+.kz__tool[aria-pressed="true"]{border:1px dashed var(--turq);color:var(--turq)}
+
+/* ---------- Настройки ---------- */
+.kz__panel{
+  padding:8px var(--gut) 0;
+  display:grid;grid-template-columns:minmax(0,1fr);
+}
+.kf{padding-block:14px;border-bottom:1px solid var(--rule);min-width:0}
+.kf--row{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.kf__head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.kf__label{font-size:.9375rem;font-weight:400;color:var(--chalk)}
+.kf__hint{font-size:.8125rem;color:var(--chalk-3)}
+.kf .choice{padding-top:8px}
+.kf .choice__item span{padding:0 14px}
+
+.kf__num{display:inline-flex;align-items:baseline;gap:6px;color:var(--chalk-3);font-size:.75rem}
+/* 16 px обязательно: на меньшем шрифте iPhone увеличивает страницу при вводе */
+.kf__num input{
+  width:5.2em;min-height:44px;padding:0 4px;text-align:right;
+  background:transparent;border:0;border-bottom:1px solid var(--rule-2);border-radius:0;
+  color:var(--chalk);font-size:16px;font-weight:500;
+  -moz-appearance:textfield;appearance:textfield;
+}
+.kf__num input::-webkit-outer-spin-button,
+.kf__num input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.kf__num input:focus{outline:none;border-bottom:1px dashed var(--turq)}
+
+.kf__limits{
+  display:flex;justify-content:space-between;
+  font-size:.6875rem;color:var(--chalk-3);margin-top:-4px;
+}
+
+/* Высота 44 px для пальца. pan-y: вертикальный жест остаётся прокруткой
+   страницы и случайно не сдвигает размер. */
+.range{
+  -webkit-appearance:none;appearance:none;
+  display:block;width:100%;height:44px;margin:0;background:transparent;
+  touch-action:pan-y;cursor:pointer;
+}
+.range::-webkit-slider-runnable-track{
+  height:4px;border-radius:2px;
+  background:linear-gradient(var(--turq),var(--turq)) 0/var(--pct,0%) 100% no-repeat,var(--rule-2);
+}
+.range::-moz-range-track{height:4px;border-radius:2px;background:var(--rule-2)}
+.range::-moz-range-progress{height:4px;border-radius:2px;background:var(--turq)}
+.range::-webkit-slider-thumb{
+  -webkit-appearance:none;width:28px;height:28px;margin-top:-12px;
+  border-radius:99px;background:var(--chalk);border:3px solid var(--turq);
+}
+.range::-moz-range-thumb{
+  width:22px;height:22px;border-radius:99px;
+  background:var(--chalk);border:3px solid var(--turq);
+}
+.range:focus-visible{outline:2px solid var(--turq);outline-offset:2px}
+
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper__val{min-width:2ch;text-align:center;font-size:1.0625rem;color:var(--chalk)}
+.stepper__btn{
+  position:relative;width:44px;height:44px;padding:0;cursor:pointer;
+  background:transparent;border:1px solid var(--rule-2);border-radius:99px;
+}
+.stepper__btn:hover{border-color:var(--turq)}
+.stepper__btn[aria-disabled="true"]{opacity:.35;cursor:default;border-color:var(--rule-2)}
+.stepper__btn::before,.stepper__btn--plus::after{
+  content:"";position:absolute;left:50%;top:50%;
+  width:14px;height:2px;margin:-1px 0 0 -7px;background:var(--chalk);
+}
+.stepper__btn--plus::after{transform:rotate(90deg)}
+
+.swatches{display:flex;flex-wrap:wrap;gap:8px;padding-top:10px}
+.swatch{position:relative;cursor:pointer}
+.swatch input{position:absolute;opacity:0;width:44px;height:44px;margin:0;cursor:pointer}
+.swatch span{
+  display:block;width:44px;height:44px;border-radius:99px;
+  background:var(--c);border:1px solid var(--rule-2);
+}
+.swatch input:checked + span{outline:2px dashed var(--turq);outline-offset:3px}
+.swatch input:focus-visible + span{outline:2px solid var(--turq);outline-offset:3px}
+
+.kz__note{padding-top:14px;font-size:.8125rem;color:var(--chalk-3)}
+
+/* ---------- Отправка ---------- */
+.kz__send{padding-top:18px}
+.kz__lead{font-size:.9375rem;color:var(--chalk);margin-bottom:12px}
+.kz__send .notice__msg{
+  margin:0 0 14px;padding:12px 14px;border:1px solid var(--rule-2);
+  background:var(--ink-2);color:var(--chalk-2);
+  font:400 .8125rem/1.55 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;
+}
+.kz__acts{display:flex;flex-wrap:wrap;gap:10px}
+.kz__acts .btn{flex:1 1 140px;min-height:48px}
+.kz__copy{
+  min-height:44px;margin-top:6px;padding:0;background:none;border:0;cursor:pointer;
+  color:var(--chalk-2);font:400 .875rem var(--ff);
+  text-decoration:underline;text-underline-offset:3px;
+}
+.kz__copy:hover{color:var(--turq)}
+.kz__copied{margin-left:10px;font-size:.8125rem;color:var(--turq)}
+
+/* Цена всегда на виду. safe-area: чтобы не заехать под полоску жестов iPhone */
+.kz__bar{
+  position:sticky;bottom:0;z-index:6;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  margin:18px calc(var(--gut) * -1) 0;
+  padding:10px var(--gut) calc(10px + env(safe-area-inset-bottom));
+  background:var(--ink-2);border-top:1px solid var(--rule-2);
+}
+.kz__bar-label{display:block;font-size:.75rem;color:var(--chalk-3);white-space:nowrap}
+.kz__price{display:block;font-size:1.5rem;font-weight:500;line-height:1.2;color:var(--chalk)}
+.kz__bar .btn{flex:0 1 auto;padding:0 18px;white-space:nowrap}
+
+/* ---------- Низкий экран: телефон боком ---------- */
+@media(max-height:500px) and (max-width:979px){
+  .kz__stage{position:relative;top:auto;height:70vh;height:70svh}
+  .kz__head{display:none}
+}
+
+/* ---------- Широкий экран ---------- */
+@media(min-width:980px){
+  .kz-page{--head:85px}
+  .kz-page .top{padding-block:12px}
+  .kz-page .mark__logo{height:60px}
+  .kz{
+    grid-template-columns:minmax(0,1.5fr) minmax(340px,1fr);
+    grid-template-rows:auto 1fr;
+    column-gap:clamp(24px,3vw,48px);
+    padding-inline:var(--gut);
+    max-width:1520px;margin-inline:auto;
+  }
+  .kz__head{grid-column:1 / -1;padding:24px 0 18px}
+  .kz__stage{
+    grid-column:1;top:calc(var(--head) + 16px);align-self:start;
+    height:calc(100vh - var(--head) - 32px);height:calc(100svh - var(--head) - 32px);
+    border:1px solid var(--rule);
+  }
+  .kz__panel{grid-column:2;padding:0 0 24px}
+  .kz__bar{margin-inline:0;padding-inline:16px;border:1px solid var(--rule-2)}
+}
+
+/* Самые узкие телефоны: подпись цены в две строки, чтобы кнопка не упиралась в край */
+@media(max-width:360px){
+  .kz__bar{gap:10px}
+  .kz__bar-label{white-space:normal;max-width:6.5em;line-height:1.2}
+  .kz__bar .btn{padding:0 14px;font-size:.875rem}
+}
+
+/* Ширина отсеков шкафа: компактные строки под общим заголовком */
+.kf--secs .kf__hint{margin-top:2px}
+.kf__sec{padding-top:6px}
+.kf__sec .kf__label{font-size:.875rem;color:var(--chalk-2)}
