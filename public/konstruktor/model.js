@@ -575,52 +575,55 @@ export function hingesFor(doorH) {
   return 5;
 }
 
-export function describe(type, s) {
-  const t = TYPES[type].label;
+/* Текст проекта для сообщения. tr это перевод строки с подстановкой {имя}
+   (window.t); без него строки остаются русскими. */
+export function describe(type, s, tr) {
+  const T = tr || ((key, vars) => key.replace(/\{(\w+)\}/g, (m, k) => (vars && vars[k] !== undefined ? vars[k] : m)));
+  const title = T(TYPES[type].label);
   if (type === 'kuhnya') {
     const ugol = s.forma === 'ugol';
     const list = (sw, tot) => (s.cols > 1 && Array.isArray(sw) && sw.reduce((x, y) => x + y, 0) === tot
-      ? ` (по шкафам: ${sw.join(', ')})` : '');
+      ? ` ${T('(по шкафам: {l})', { l: sw.join(', ') })}` : '');
     const lowerLine = s.nizh === 'da'
-      ? [`Нижние шкафы: ширина ${ugol ? `${s.w} × ${s.w2}` : s.w} мм${list(s.swL, s.w)}, глубина ${s.d} мм, высота ${s.hLow} мм`]
-      : ['Без нижних шкафов'];
+      ? [T('Нижние шкафы: ширина {w} мм{l}, глубина {d} мм, высота {h} мм', {
+        w: ugol ? `${s.w} × ${s.w2}` : s.w, l: list(s.swL, s.w), d: s.d, h: s.hLow })]
+      : [T('Без нижних шкафов')];
     return [
-      `${t}, ${ugol ? 'угловая' : 'прямая'}`,
+      T(ugol ? 'Кухня, угловая' : 'Кухня, прямая'),
       ...lowerLine,
-      `Верхние шкафы: ширина ${ugol ? `${s.wUp} × ${s.w2Up}` : s.wUp} мм${list(s.swU, s.wUp)}, глубина ${s.dUp} мм, высота ${s.hUp} мм`,
-      `Шкафов в ряду: ${s.cols}`,
-      ...(s.susilka === 'da' ? ['Сушилка для посуды 90 см в первом верхнем шкафу'] : [])
+      T('Верхние шкафы: ширина {w} мм{l}, глубина {d} мм, высота {h} мм', {
+        w: ugol ? `${s.wUp} × ${s.w2Up}` : s.wUp, l: list(s.swU, s.wUp), d: s.dUp, h: s.hUp }),
+      T('Шкафов в ряду: {n}', { n: s.cols }),
+      ...(s.susilka === 'da' ? [T('Сушилка для посуды 90 см в первом верхнем шкафу')] : [])
     ];
   }
   if (type === 'shkaf') {
     const rails = Math.min(s.shtanga, s.cols);
     const shelves = s.cols - rails;
     return [
-      t,
-      `Размер: ${s.w} × ${s.h} × ${s.d} мм`,
-      `Отсеков: ${s.cols}, из них со штангой для одежды: ${rails}`,
-      ...(s.cols > 1 && Array.isArray(s.sw) ? [`Ширина отсеков: ${s.sw.join(', ')} мм`] : []),
-      shelves > 0 ? `Полок в остальных отсеках: ${s.rows}` : 'Все отсеки со штангой',
-      s.dveri === 'petli' ? 'Двери на петлях' : s.dveri === 'kupe' ? 'Двери-купе' : 'Открытый, без дверей'
+      title,
+      T('Размер: {w} × {h} × {d} мм', { w: s.w, h: s.h, d: s.d }),
+      T('Отсеков: {n}, из них со штангой для одежды: {r}', { n: s.cols, r: rails }),
+      ...(s.cols > 1 && Array.isArray(s.sw) ? [T('Ширина отсеков: {l} мм', { l: s.sw.join(', ') })] : []),
+      shelves > 0 ? T('Полок в остальных отсеках: {n}', { n: s.rows }) : T('Все отсеки со штангой'),
+      s.dveri === 'petli' ? T('Двери на петлях') : s.dveri === 'kupe' ? T('Двери-купе') : T('Открытый, без дверей')
     ];
   }
   if (type === 'polki') {
     return [
-      t,
-      `Размер полки: ${s.w} × ${s.d} мм`,
-      s.rows > 1 ? `Количество: ${s.rows}, между полками ${s.gap} мм` : 'Количество: 1'
+      title,
+      T('Размер полки: {w} × {d} мм', { w: s.w, d: s.d }),
+      s.rows > 1 ? T('Количество: {n}, между полками {g} мм', { n: s.rows, g: s.gap }) : T('Количество: 1')
     ];
   }
-  const lines = [t, `Размер: ${s.w} × ${s.d} мм, высота ${s.h} мм`];
+  const lines = [title, T('Размер: {w} × {d} мм, высота {h} мм', { w: s.w, d: s.d, h: s.h })];
   if (s.tumby === 'net') {
-    lines.push('Без тумб');
+    lines.push(T('Без тумб'));
+  } else if (s.tumby === 'dve' && s.front === 'smesh') {
+    lines.push(T('Тумбы с двух сторон: слева с дверцей, справа с тремя ящиками'));
   } else {
-    if (s.tumby === 'dve' && s.front === 'smesh') {
-      lines.push('Тумбы с двух сторон: слева с дверцей, справа с тремя ящиками');
-    } else {
-      const where = s.tumby === 'dve' ? 'Тумбы с двух сторон' : 'Тумба с одной стороны';
-      lines.push(`${where}, ${s.front === 'dverca' ? 'с дверцей' : 'с тремя ящиками'}`);
-    }
+    const where = s.tumby === 'dve' ? 'Тумбы с двух сторон' : 'Тумба с одной стороны';
+    lines.push(T(`${where}, ${s.front === 'dverca' ? 'с дверцей' : 'с тремя ящиками'}`));
   }
   return lines;
 }

@@ -21,6 +21,12 @@
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
+  /* перевод строки: без i18n.js остаётся русский текст как есть */
+  function tr(key, vars) {
+    if (window.t) return window.t(key, vars);
+    return key.replace(/\{(\w+)\}/g, function (m, k) { return vars && vars[k] !== undefined ? vars[k] : m; });
+  }
+
   /* ---------- 2. Виды проекта в «Работах» ---------- */
   [].forEach.call(document.querySelectorAll('[data-gallery]'), function (fig) {
     var shot = fig.querySelector('[data-shot]');
@@ -36,14 +42,21 @@
 
     function show(btn) {
       shot.src = btn.getAttribute('data-src');
-      shot.alt = btn.getAttribute('data-alt') || '';
-      if (cap) cap.textContent = btn.getAttribute('data-cap') || '';
+      shot.alt = tr(btn.getAttribute('data-alt') || '');
+      if (cap) cap.textContent = tr(btn.getAttribute('data-cap') || '');
       buttons.forEach(function (b) {
         var on = b === btn;
         b.classList.toggle('is-on', on);
         b.setAttribute('aria-pressed', on ? 'true' : 'false');
       });
     }
+
+    /* подпись и описание кадра берутся из data-атрибутов уже переведёнными */
+    function current() {
+      return buttons.filter(function (b) { return b.classList.contains('is-on'); })[0] || buttons[0];
+    }
+    show(current());
+    document.addEventListener('langchange', function () { show(current()); });
 
     fig.addEventListener('click', function (e) {
       var btn = e.target.closest ? e.target.closest('.view') : null;
@@ -111,6 +124,42 @@
   name.addEventListener('input', function () { if (rowOf(name).classList.contains('is-bad')) checkName(); });
   contact.addEventListener('input', function () { if (rowOf(contact).classList.contains('is-bad')) checkContact(); });
 
+  /* текст заявки на языке, выбранном на сайте */
+  function buildMessage() {
+    var kindEl = form.querySelector('input[name="kind"]:checked');
+    var size = (document.getElementById('f-size') || {}).value || '';
+    var lines = [
+      tr('Заявка на замер'),
+      tr('Имя: {v}', { v: name.value.trim() }),
+      tr('Связь: {v}', { v: contact.value.trim() }),
+      tr('Что нужно: {v}', { v: kindEl ? tr(kindEl.value) : '' })
+    ];
+    if (size.trim()) lines.push(tr('Проём: {v} мм', { v: size.trim() }));
+    return lines.join('\n');
+  }
+
+  /* shown: null, пока заявку не собирали; затем true, если текст скопирован */
+  var shown = null;
+
+  function render() {
+    if (shown === null) return;
+    notice.hidden = false;
+    notice.innerHTML =
+      '<p class="notice__lead">' +
+      (shown
+        ? tr('Заявка скопирована. Откройте переписку и вставьте её одним нажатием.')
+        : tr('Заявка готова. Скопируйте текст и отправьте его в Telegram.')) +
+      '</p>' +
+      '<pre class="notice__msg"></pre>' +
+      '<p class="notice__acts">' +
+      '<a class="btn btn--ghost" href="https://t.me/BintApandi" target="_blank" rel="noopener">' + tr('Я сестра') + '</a> ' +
+      '<a class="btn btn--ghost" href="https://t.me/AAA116Z" target="_blank" rel="noopener">' + tr('Я брат') + '</a>' +
+      '</p>';
+    notice.querySelector('.notice__msg').textContent = buildMessage();
+  }
+
+  document.addEventListener('langchange', render);
+
   form.addEventListener('submit', function (e) {
     e.preventDefault();
 
@@ -128,37 +177,13 @@
     /* Бэкенда у статического сайта нет, поэтому заявку не «отправляем»,
        а собираем в готовый текст: кладём в буфер и открываем переписку.
        Ничего не притворяется отправленным. */
-    var kindEl = form.querySelector('input[name="kind"]:checked');
-    var size = (document.getElementById('f-size') || {}).value || '';
-    var lines = [
-      'Заявка на замер',
-      'Имя: ' + name.value.trim(),
-      'Связь: ' + contact.value.trim(),
-      'Что нужно: ' + (kindEl ? kindEl.value : '')
-    ];
-    if (size.trim()) lines.push('Проём: ' + size.trim() + ' мм');
-    var message = lines.join('\n');
-
-    function render(copied) {
-      notice.hidden = false;
-      notice.innerHTML =
-        '<p class="notice__lead">' +
-        (copied
-          ? 'Заявка скопирована. Откройте переписку и вставьте её одним нажатием.'
-          : 'Заявка готова. Скопируйте текст и отправьте его в Telegram.') +
-        '</p>' +
-        '<pre class="notice__msg"></pre>' +
-        '<p class="notice__acts">' +
-        '<a class="btn btn--ghost" href="https://t.me/BintApandi" target="_blank" rel="noopener">Я сестра</a> ' +
-        '<a class="btn btn--ghost" href="https://t.me/AAA116Z" target="_blank" rel="noopener">Я брат</a>' +
-        '</p>';
-      notice.querySelector('.notice__msg').textContent = message;
-    }
+    var message = buildMessage();
 
     function finish(copied) {
       submit.classList.remove('is-busy');
       submit.disabled = false;
-      render(copied);
+      shown = copied;
+      render();
     }
 
     if (navigator.clipboard && navigator.clipboard.writeText) {

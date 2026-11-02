@@ -3,7 +3,7 @@
    остаются рабочими. */
 import {
   TYPES, COLORS, SECTION_MIN, DRYER_CAB, equalSections, upperDefault, buildModel, estimate, describe
-} from './model.js';
+} from './model.js?v=2';
 
 const CONTACTS = { sister: 'BintApandi', brother: 'AAA116Z' };
 const SHORT = {
@@ -12,6 +12,10 @@ const SHORT = {
   wUp: 'wu', w2Up: 'w2u', dUp: 'du'
 };
 const SECTION_STEP = 10;
+
+/* перевод из i18n.js; если он не загрузился, остаётся русский */
+const tr = (key, vars) => (window.t ? window.t(key, vars)
+  : key.replace(/\{(\w+)\}/g, (m, k) => (vars && vars[k] !== undefined ? vars[k] : m)));
 
 const $ = (id) => document.getElementById(id);
 const el = {
@@ -206,7 +210,7 @@ let view = null;
 
 async function startScene() {
   try {
-    const { createScene } = await import('./scene.js');
+    const { createScene } = await import('./scene.js?v=2');
     view = createScene(el.stage, el.labels);
     el.status.hidden = true;
     refresh({ refit: true });
@@ -214,18 +218,27 @@ async function startScene() {
     console.error(err);
     /* Обрыв связи и отсутствие 3D в браузере лечатся по-разному.
        Настройки лежат в адресе, поэтому перезагрузка их не теряет. */
-    const network = /fetch|import|load/i.test(String(err && err.message));
-    el.status.textContent = network
-      ? 'Модель не загрузилась, похоже, прервалась связь. Размеры и цена работают.'
-      : 'Этот браузер не показывает 3D-модель. Размеры, цена и отправка проекта работают.';
-    if (network) {
-      const retry = document.createElement('button');
-      retry.type = 'button';
-      retry.className = 'btn btn--ghost';
-      retry.textContent = 'Повторить';
-      retry.addEventListener('click', () => location.reload());
-      el.status.append(retry);
-    }
+    sceneError = /fetch|import|load/i.test(String(err && err.message)) ? 'network' : 'nowebgl';
+    renderStatus();
+  }
+}
+
+/* null: сцена грузится или уже работает */
+let sceneError = null;
+
+function renderStatus() {
+  if (!sceneError) return;
+  el.status.hidden = false;
+  el.status.textContent = sceneError === 'network'
+    ? tr('Модель не загрузилась, похоже, прервалась связь. Размеры и цена работают.')
+    : tr('Этот браузер не показывает 3D-модель. Размеры, цена и отправка проекта работают.');
+  if (sceneError === 'network') {
+    const retry = document.createElement('button');
+    retry.type = 'button';
+    retry.className = 'btn btn--ghost';
+    retry.textContent = tr('Повторить');
+    retry.addEventListener('click', () => location.reload());
+    el.status.append(retry);
   }
 }
 
@@ -234,7 +247,7 @@ function choiceHtml(name, options, current) {
   return Object.entries(options).map(([value, label]) => `
     <label class="choice__item">
       <input type="radio" name="${name}" value="${value}"${value === current ? ' checked' : ''}>
-      <span>${label}</span>
+      <span>${tr(label)}</span>
     </label>`).join('');
 }
 
@@ -244,7 +257,7 @@ function sizeHtml(attr, rangeAttr, id, label, value, min, max, step) {
       <span class="kf__num">
         <input class="mono" id="${id}" ${attr} type="number" inputmode="numeric"
           min="${min}" max="${max}" step="${step}" value="${value}">
-        <span class="mono">мм</span>
+        <span class="mono">${tr('мм')}</span>
       </span>
     </div>
     <input class="range" ${rangeAttr} type="range" aria-label="${label}"
@@ -253,8 +266,8 @@ function sizeHtml(attr, rangeAttr, id, label, value, min, max, step) {
 
 function fieldHtml(key, f, s) {
   if (f.kind === 'choice') {
-    return `<div class="kf" role="radiogroup" aria-label="${f.label}">
-      <span class="kf__label">${f.label}</span>
+    return `<div class="kf" role="radiogroup" aria-label="${tr(f.label)}">
+      <span class="kf__label">${tr(f.label)}</span>
       <div class="choice">${choiceHtml(key, Object.fromEntries(
         Object.entries(f.options).filter(([v]) => optionAllowed(f, v, s))), s[key])}</div>
     </div>`;
@@ -265,17 +278,17 @@ function fieldHtml(key, f, s) {
     const atMin = s[key] <= f.min ? ' aria-disabled="true"' : '';
     const atMax = s[key] >= maxFor(f, s) ? ' aria-disabled="true"' : '';
     return `<div class="kf kf--row">
-      <span class="kf__label" id="l-${key}">${f.label}</span>
+      <span class="kf__label" id="l-${key}">${tr(f.label)}</span>
       <div class="stepper" role="group" aria-labelledby="l-${key}">
-        <button type="button" class="stepper__btn stepper__btn--minus" data-step="${key}" data-by="-1" aria-label="Меньше"${atMin}></button>
+        <button type="button" class="stepper__btn stepper__btn--minus" data-step="${key}" data-by="-1" aria-label="${tr('Меньше')}"${atMin}></button>
         <output class="stepper__val mono" id="v-${key}">${s[key]}</output>
-        <button type="button" class="stepper__btn stepper__btn--plus" data-step="${key}" data-by="1" aria-label="Больше"${atMax}></button>
+        <button type="button" class="stepper__btn stepper__btn--plus" data-step="${key}" data-by="1" aria-label="${tr('Больше')}"${atMax}></button>
       </div>
     </div>`;
   }
   const min = minFor(f, s);
   return `<div class="kf">
-    ${sizeHtml(`data-num="${key}"`, `data-range="${key}"`, `n-${key}`, f.label, s[key], min, f.max, f.step)}
+    ${sizeHtml(`data-num="${key}"`, `data-range="${key}"`, `n-${key}`, tr(f.label), s[key], min, f.max, f.step)}
     <div class="kf__limits mono"><span>${min}</span><span>${f.max}</span></div>
   </div>`;
 }
@@ -286,23 +299,23 @@ function sectionsHtml(g, s) {
   const adjust = canAdjust(g, s);
   const rows = s[g.key].map((v, i) => {
     if (i < free || !adjust) {
-      const why = i < free ? ', под сушилку' : '';
+      const why = i < free ? tr(', под сушилку') : '';
       return `<div class="kf__sec kf__sec--fixed">
-        <span class="kf__label">${g.item} ${i + 1}${why}</span>
-        <span class="mono kf__fixed">${v} мм</span>
+        <span class="kf__label">${tr(g.item)} ${i + 1}${why}</span>
+        <span class="mono kf__fixed">${v} ${tr('мм')}</span>
       </div>`;
     }
     const j = neighbourOf(g, s, i);
     const max = v + s[g.key][j] - SECTION_MIN;
     const id = secId(g, i);
     return `<div class="kf__sec">
-      ${sizeHtml(`data-sec="${id}"`, `data-secr="${id}"`, `sw-${g.key}-${i}`, `${g.item} ${i + 1}`, v, SECTION_MIN, max, SECTION_STEP)}
+      ${sizeHtml(`data-sec="${id}"`, `data-secr="${id}"`, `sw-${g.key}-${i}`, `${tr(g.item)} ${i + 1}`, v, SECTION_MIN, max, SECTION_STEP)}
     </div>`;
   }).join('');
-  const dryerNote = free ? ' Шкаф под сушилку фиксированный: внутри него ровно 90 см.' : '';
+  const dryerNote = free ? ` ${tr('Шкаф под сушилку фиксированный: внутри него ровно 90 см.')}` : '';
   return `<div class="kf kf--secs">
-    <span class="kf__label">${g.title}</span>
-    <p class="kf__hint">${g.hint}${dryerNote}</p>
+    <span class="kf__label">${tr(g.title)}</span>
+    <p class="kf__hint">${tr(g.hint)}${dryerNote}</p>
     ${rows}
   </div>`;
 }
@@ -331,20 +344,20 @@ function renderColors() {
   el.colors.innerHTML = Object.entries(COLORS).map(([k, c]) => `
     <label class="swatch">
       <input type="radio" name="color" value="${k}"${k === state.color ? ' checked' : ''}>
-      <span style="--c:${c.hex}"><i class="sr">${c.label}</i></span>
+      <span style="--c:${c.hex}"><i class="sr">${tr(c.label)}</i></span>
     </label>`).join('');
-  el.colorName.textContent = COLORS[state.color].label;
+  el.colorName.textContent = tr(COLORS[state.color].label);
 }
 
 /* ---------- Пересчёт ---------- */
 function message(usd) {
-  const lines = describe(state.type, values[state.type]);
+  const lines = describe(state.type, values[state.type], tr);
   return [
-    'Проект из конструктора',
+    tr('Проект из конструктора'),
     ...lines,
-    `Цвет: ${COLORS[state.color].label}`,
-    `Примерная стоимость: ${usd} $`,
-    `Проект: ${projectUrl()}`
+    tr('Цвет: {c}', { c: tr(COLORS[state.color].label) }),
+    tr('Примерная стоимость: {p} $', { p: usd }),
+    tr('Проект: {u}', { u: projectUrl() })
   ].join('\n');
 }
 
@@ -358,8 +371,8 @@ function refresh(opts) {
   const sum = estimate(model);
   el.price.textContent = `${sum.usd} $`;
   el.note.textContent = state.type === 'kuhnya'
-    ? 'Стоимость примерная, столешница считается отдельно. Точную назовём после замера.'
-    : 'Стоимость примерная. Точную назовём после замера.';
+    ? tr('Стоимость примерная, столешница считается отдельно. Точную назовём после замера.')
+    : tr('Стоимость примерная. Точную назовём после замера.');
 
   const text = message(sum.usd);
   el.sendText.textContent = text;
@@ -378,7 +391,7 @@ function refresh(opts) {
   el.noDoors.hidden = !(state.type === 'kuhnya' && view);
   el.doors.hidden = !moving || !view || state.noDoors;
   if (!moving && state.open) setOpen(false);
-  el.doors.textContent = state.labels[state.open ? 1 : 0];
+  el.doors.textContent = tr(state.labels[state.open ? 1 : 0]);
 
   history.replaceState(null, '', projectUrl());
   if (view) view.update(model, COLORS[state.color], opts);
@@ -386,14 +399,14 @@ function refresh(opts) {
 
 function setNoDoors(on) {
   state.noDoors = on;
-  el.noDoors.textContent = on ? 'С дверями' : 'Без дверей';
+  el.noDoors.textContent = tr(on ? 'С дверями' : 'Без дверей');
   el.noDoors.setAttribute('aria-pressed', String(on));
   if (view) view.setDoorsShown(!on);
 }
 
 function setOpen(open) {
   state.open = open;
-  el.doors.textContent = state.labels[open ? 1 : 0];
+  el.doors.textContent = tr(state.labels[open ? 1 : 0]);
   el.doors.setAttribute('aria-pressed', String(open));
   if (view) view.setOpen(open);
 }
@@ -519,10 +532,21 @@ $('send-btn').addEventListener('click', () => {
 el.copy.addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(el.sendText.textContent);
-    el.copied.textContent = 'Скопировано';
+    el.copied.textContent = tr('Скопировано');
   } catch (err) {
-    el.copied.textContent = 'Не получилось, выделите текст вручную';
+    el.copied.textContent = tr('Не получилось, выделите текст вручную');
   }
+});
+
+/* Смена языка: всё, что рисует этот скрипт, рисуется заново */
+document.addEventListener('langchange', () => {
+  el.copied.textContent = '';
+  renderTypes();
+  renderColors();
+  renderFields();
+  setNoDoors(state.noDoors);
+  renderStatus();
+  refresh();
 });
 
 const header = document.querySelector('.top');

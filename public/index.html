@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body>
 
@@ -25,7 +25,7 @@
     <a href="#tsekh">Производство</a>
     <a href="#srok">Сроки</a>
     <a href="#raboty">Работы</a>
-    <a href="/konstruktor/">Конструктор</a>
+    <a href="/konstruktor/" data-keep>Конструктор</a>
   </nav>
   <a class="btn btn--ghost top__cta" href="#zayavka">Замер</a>
 </header>
@@ -109,7 +109,7 @@
         <p class="hero__lede">Кухни, шкафы, полки и столы из панелей МДФ. Считаем по факту замера, а не по каталогу готовых размеров.</p>
         <div class="hero__act">
           <a class="btn btn--solid" href="#zayavka">Вызвать замерщика</a>
-          <span class="hero__note">Замер бесплатный</span>
+          <a class="btn btn--ghost" href="/konstruktor/">Собрать в конструкторе</a>
         </div>
       </div>
 
@@ -309,7 +309,7 @@
         <div class="frame__box">
           <span class="frame__corner frame__corner--tl"></span>
           <span class="frame__corner frame__corner--br"></span>
-          <img data-shot src="assets/works/kuhnya-1.jpg" alt="Кухня до работ: бетонная тумба без фасадов" loading="lazy" decoding="async" width="800" height="450">
+          <img data-shot data-no-i18n src="assets/works/kuhnya-1.jpg" alt="Кухня до работ: бетонная тумба без фасадов" loading="lazy" decoding="async" width="800" height="450">
         </div>
         <div class="views" role="group" aria-label="Виды проекта: кухня">
           <button type="button" class="view is-on" aria-pressed="true"
@@ -325,14 +325,14 @@
             data-alt="Готовая угловая кухня с гранитной столешницей"
             data-cap="Готово, угловой гарнитур">3</button>
         </div>
-        <figcaption><span class="mono dim">кухня</span> <span data-cap>До работ, бетонная тумба</span></figcaption>
+        <figcaption><span class="mono dim">кухня</span> <span data-cap data-no-i18n>До работ, бетонная тумба</span></figcaption>
       </figure>
 
       <figure class="frame" data-gallery>
         <div class="frame__box">
           <span class="frame__corner frame__corner--tl"></span>
           <span class="frame__corner frame__corner--br"></span>
-          <img data-shot src="assets/works/shkafy-1.jpg" alt="Навесные шкафчики с сушилкой для посуды, дверца открыта" loading="lazy" decoding="async" width="600" height="800">
+          <img data-shot data-no-i18n src="assets/works/shkafy-1.jpg" alt="Навесные шкафчики с сушилкой для посуды, дверца открыта" loading="lazy" decoding="async" width="600" height="800">
         </div>
         <div class="views" role="group" aria-label="Виды проекта: навесные шкафы">
           <button type="button" class="view is-on" aria-pressed="true"
@@ -344,14 +344,14 @@
             data-alt="Навесные шкафчики с закрытыми фасадами над рабочей зоной"
             data-cap="Фасады закрыты">2</button>
         </div>
-        <figcaption><span class="mono dim">шкафы</span> <span data-cap>Сушилка внутри корпуса</span></figcaption>
+        <figcaption><span class="mono dim">шкафы</span> <span data-cap data-no-i18n>Сушилка внутри корпуса</span></figcaption>
       </figure>
 
       <figure class="frame" data-gallery>
         <div class="frame__box">
           <span class="frame__corner frame__corner--tl"></span>
           <span class="frame__corner frame__corner--br"></span>
-          <img data-shot src="assets/works/polki-1.jpg" alt="Три навесные полки из МДФ с книгами" loading="lazy" decoding="async" width="600" height="800">
+          <img data-shot data-no-i18n src="assets/works/polki-1.jpg" alt="Три навесные полки из МДФ с книгами" loading="lazy" decoding="async" width="600" height="800">
         </div>
         <div class="views" role="group" aria-label="Виды проекта: полки">
           <button type="button" class="view is-on" aria-pressed="true"
@@ -363,7 +363,7 @@
             data-alt="Навесная полка из МДФ с вазой"
             data-cap="Одиночная полка, 695 × 295">2</button>
         </div>
-        <figcaption><span class="mono dim">полки</span> <span data-cap>Три полки, комната</span></figcaption>
+        <figcaption><span class="mono dim">полки</span> <span data-cap data-no-i18n>Три полки, комната</span></figcaption>
       </figure>
 
       <figure class="frame">
@@ -434,7 +434,7 @@
         <p class="spec__legal">Отправляя заявку, вы соглашаетесь на обработку указанных данных для связи по ней.</p>
       </div>
 
-      <output class="notice" id="notice" hidden></output>
+      <output class="notice" id="notice" data-js hidden></output>
     </form>
   </div>
 </section>
@@ -466,6 +466,7 @@
   </div>
 </footer>
 
-<script src="app.js"></script>
+<script src="i18n.js?v=2"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>

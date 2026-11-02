@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css">
-<link rel="stylesheet" href="/konstruktor/konstruktor.css">
+<link rel="stylesheet" href="/styles.css?v=2">
+<link rel="stylesheet" href="/konstruktor/konstruktor.css?v=2">
 </head>
 <body class="kz-page">
 
@@ -33,46 +33,46 @@
 
   <div class="kz__stage" id="stage">
     <p class="kz__status" id="stage-status">Загружаем модель</p>
-    <div class="kz__labels" id="labels" aria-hidden="true"></div>
+    <div class="kz__labels" id="labels" data-js aria-hidden="true"></div>
     <div class="kz__tools">
-      <button class="btn kz__tool" id="nodoors" type="button" aria-pressed="false" hidden>Без дверей</button>
-      <button class="btn kz__tool kz__doors" id="doors" type="button" aria-pressed="false" hidden>Открыть двери</button>
+      <button class="btn kz__tool" id="nodoors" type="button" aria-pressed="false" data-js hidden>Без дверей</button>
+      <button class="btn kz__tool kz__doors" id="doors" type="button" aria-pressed="false" data-js hidden>Открыть двери</button>
     </div>
   </div>
 
   <form class="kz__panel" onsubmit="return false" aria-label="Настройки изделия">
     <div class="kf">
       <span class="kf__label">Что собираем</span>
-      <div class="choice" id="types" role="radiogroup" aria-label="Изделие"></div>
+      <div class="choice" id="types" data-js role="radiogroup" aria-label="Изделие"></div>
     </div>
 
-    <div id="fields"></div>
+    <div id="fields" data-js></div>
 
     <div class="kf">
       <div class="kf__head">
         <span class="kf__label">Цвет</span>
-        <span class="kf__hint" id="color-name"></span>
+        <span class="kf__hint" id="color-name" data-js></span>
       </div>
-      <div class="swatches" id="colors" role="radiogroup" aria-label="Цвет"></div>
+      <div class="swatches" id="colors" data-js role="radiogroup" aria-label="Цвет"></div>
     </div>
 
-    <p class="kz__note" id="note"></p>
+    <p class="kz__note" id="note" data-js></p>
 
     <section class="kz__send" id="send" aria-label="Отправка проекта" hidden>
       <p class="kz__lead">Проект готов. Выберите, кому написать: текст подставится в сообщение сам.</p>
-      <pre class="notice__msg" id="send-text"></pre>
+      <pre class="notice__msg" id="send-text" data-js></pre>
       <div class="kz__acts">
         <a class="btn btn--ghost" id="to-sister" href="https://t.me/BintApandi" target="_blank" rel="noopener">Я сестра</a>
         <a class="btn btn--ghost" id="to-brother" href="https://t.me/AAA116Z" target="_blank" rel="noopener">Я брат</a>
       </div>
       <button class="kz__copy" id="copy" type="button">Скопировать текст</button>
-      <span class="kz__copied" id="copied" role="status"></span>
+      <span class="kz__copied" id="copied" data-js role="status"></span>
     </section>
 
     <div class="kz__bar">
       <div>
         <span class="kz__bar-label">Примерная стоимость</span>
-        <output class="kz__price mono" id="price" aria-live="polite"></output>
+        <output class="kz__price mono" id="price" data-js aria-live="polite"></output>
       </div>
       <button class="btn btn--solid" id="send-btn" type="button">Отправить проект</button>
     </div>
@@ -80,6 +80,7 @@
 </main>
 
 <noscript><p class="wrap">Для конструктора нужен включённый JavaScript.</p></noscript>
-<script type="module" src="/konstruktor/konstruktor.js"></script>
+<script src="/i18n.js?v=2"></script>
+<script type="module" src="/konstruktor/konstruktor.js?v=2"></script>
 </body>
 </html>

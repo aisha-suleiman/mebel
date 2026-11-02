@@ -122,7 +122,7 @@ p{margin:0}
 .mark__text b{font-weight:600}
 .node-dot{fill:var(--turq)}
 .node-ring{opacity:.5}
-.top__nav{display:flex;gap:26px;margin-left:auto}
+.top__nav{display:flex;gap:26px;margin-inline-start:auto}
 .top__nav a{color:var(--chalk-2);text-decoration:none;font-size:.875rem;transition:color var(--dur) var(--ease)}
 .top__nav a:hover{color:var(--chalk)}
 .top__cta{min-height:44px;padding:0 20px;font-size:.875rem}
@@ -209,7 +209,6 @@ p{margin:0}
 }
 .hero__lede{margin-top:18px;max-width:34ch;color:var(--chalk-2);font-size:clamp(.95rem,1.1vw,1.0625rem)}
 .hero__act{margin-top:30px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-.hero__note{font-size:.8125rem;color:var(--chalk-3)}
 .hero__scroll{
   position:absolute;z-index:2;left:50%;bottom:26px;transform:translateX(-50%);
   font-size:.75rem;color:var(--chalk-3);letter-spacing:.04em;
@@ -299,19 +298,19 @@ p{margin:0}
 }
 .chain__steps li{
   position:relative;padding-top:22px;display:grid;gap:5px;
-  padding-right:14px;
+  padding-inline-end:14px;
 }
 .chain__steps li::before{
-  content:"";position:absolute;top:-1px;left:0;width:1px;height:13px;background:var(--rule-2);
+  content:"";position:absolute;top:-1px;inset-inline-start:0;width:1px;height:13px;background:var(--rule-2);
 }
 .chain__steps li:last-child::after{
-  content:"";position:absolute;top:-1px;right:0;width:1px;height:13px;background:var(--rule-2);
+  content:"";position:absolute;top:-1px;inset-inline-end:0;width:1px;height:13px;background:var(--rule-2);
 }
 .chain__steps .st{font-size:.75rem;color:var(--chalk-3)}
 .chain__steps .nm{color:var(--chalk);font-size:clamp(1rem,1.6vw,1.25rem);font-weight:400}
 .chain__steps li.is-span .nm{color:var(--turq)}
 .chain__span{
-  position:absolute;top:0;left:40%;width:40%;
+  position:absolute;top:0;inset-inline-start:40%;width:40%;
   border-top:1px dashed var(--turq);
   height:34px;
 }
@@ -418,8 +417,8 @@ p{margin:0}
 .spec__hint{color:var(--chalk-3);font-size:.8125rem}
 
 .measure{position:relative;display:flex;align-items:center}
-.measure input{padding-right:42px}
-.measure__unit{position:absolute;right:0;bottom:11px;font-size:.8125rem;color:var(--chalk-3)}
+.measure input{padding-inline-end:42px}
+.measure__unit{position:absolute;inset-inline-end:0;bottom:11px;font-size:.8125rem;color:var(--chalk-3)}
 
 .choice{display:flex;flex-wrap:wrap;gap:8px;padding-top:6px}
 .choice__item{position:relative;cursor:pointer}
@@ -476,12 +475,12 @@ p{margin:0}
 
 /* ============ АДАПТАЦИЯ ============ */
 @media(max-width:1080px){
-  /* меню скрыто, кнопку некому отодвинуть вправо */
-  .top__cta{margin-left:auto}
-  .top__nav{display:none}
+  /* из меню остаётся только конструктор, он отодвигает кнопку вправо */
+  .top__nav a:not([data-keep]){display:none}
+  .top__nav a{display:inline-flex;align-items:center;min-height:44px}
   .hero__copy{
     position:static;transform:none;translate:none;width:auto;
-    padding-inline:var(--gut);text-align:left;max-width:34rem;
+    padding-inline:var(--gut);text-align:start;max-width:34rem;
   }
   .hero__stage{
     grid-template-rows:1fr auto;align-content:center;gap:clamp(18px,3vw,32px);
@@ -544,3 +543,40 @@ p{margin:0}
   text-decoration:underline;text-underline-offset:4px;
 }
 .plate__link:hover{color:var(--turq-hi)}
+
+/* ============ ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА ============ */
+.lang{
+  min-height:44px;min-width:58px;padding:0 26px 0 12px;
+  font:500 .8125rem/1 var(--mono);letter-spacing:.04em;color:var(--chalk);
+  background:transparent;border:1px solid var(--rule-2);border-radius:2px;cursor:pointer;
+  -webkit-appearance:none;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--chalk-3) 50%),linear-gradient(135deg,var(--chalk-3) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;
+  background-size:5px 5px;background-repeat:no-repeat;
+  transition:border-color var(--dur) var(--ease);
+}
+.lang:hover{border-color:var(--turq)}
+.lang option{background:var(--ink-2);color:var(--chalk)}
+@media(max-width:620px){.top{gap:12px}}
+
+/* ============ АРАБСКИЙ И ПИСЬМО СПРАВА НАЛЕВО ============
+   Страница зеркалится сама от dir="rtl": колонки, flex и текст идут справа.
+   Здесь только то, что зеркалить нельзя или что зависит от шрифта. */
+html[lang="ar"]{
+  --ff: "Noto Sans Arabic","Geologica",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+  --mono: "JetBrains Mono","Noto Sans Arabic",ui-monospace,Consolas,monospace;
+}
+/* межбуквенный интервал рвёт арабскую вязь */
+html[lang="ar"] *,html[lang="ar"] *::before,html[lang="ar"] *::after{letter-spacing:0!important}
+html[lang="ar"] body{line-height:1.8}
+html[lang="ar"] h1,html[lang="ar"] h2,html[lang="ar"] h3{line-height:1.3}
+html[dir="rtl"] .lang{padding:0 12px 0 26px;background-position:15px 50%,10px 50%}
+/* поле номера и текст сообщения: числа и ссылки читаются слева направо */
+html[dir="rtl"] .notice__msg,html[dir="rtl"] .kz__send .notice__msg{unicode-bidi:plaintext;text-align:start}
+html[dir="rtl"] .spec input[type=text],html[dir="rtl"] .spec input[type=tel]{text-align:start}
+@media(max-width:380px){
+  .top{gap:8px;padding-inline:14px}
+  .mark__logo,.kz-page .mark__logo{height:48px}
+  .top__cta{padding:0 12px}
+  .lang{min-width:52px;padding-inline-start:8px}
+}

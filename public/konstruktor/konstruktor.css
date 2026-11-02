@@ -67,7 +67,7 @@
 .kf__num{display:inline-flex;align-items:baseline;gap:6px;color:var(--chalk-3);font-size:.75rem}
 /* 16 px обязательно: на меньшем шрифте iPhone увеличивает страницу при вводе */
 .kf__num input{
-  width:5.2em;min-height:44px;padding:0 4px;text-align:right;
+  width:5.2em;min-height:44px;padding:0 4px;text-align:end;
   background:transparent;border:0;border-bottom:1px solid var(--rule-2);border-radius:0;
   color:var(--chalk);font-size:16px;font-weight:500;
   -moz-appearance:textfield;appearance:textfield;
@@ -146,7 +146,7 @@
   text-decoration:underline;text-underline-offset:3px;
 }
 .kz__copy:hover{color:var(--turq)}
-.kz__copied{margin-left:10px;font-size:.8125rem;color:var(--turq)}
+.kz__copied{margin-inline-start:10px;font-size:.8125rem;color:var(--turq)}
 
 /* Цена всегда на виду. safe-area: чтобы не заехать под полоску жестов iPhone */
 .kz__bar{
@@ -203,3 +203,6 @@
 /* Шкаф, ширина которого не меняется (под сушилку или единственный) */
 .kf__sec--fixed{display:flex;justify-content:space-between;align-items:center;min-height:44px}
 .kf__fixed{font-size:.875rem;color:var(--chalk-3)}
+
+/* Ползунок и подписи пределов всегда слева направо: заливка рисуется слева */
+.range,.kf__limits{direction:ltr}
