@@ -2,8 +2,8 @@
    Всё это работает и без 3D: если сцена не загрузилась, размеры и цена
    остаются рабочими. */
 import {
-  TYPES, COLORS, SECTION_MIN, DRYER_CAB, equalSections, upperDefault, buildModel, estimate, describe
-} from './model.js?v=9';
+  TYPES, COLORS, SECTION_MIN, DRYER_CAB, CORNER_CAB, equalSections, upperDefault, buildModel, estimate, describe
+} from './model.js?v=10';
 
 const CONTACTS = { sister: 'BintApandi', brother: 'AAA116Z' };
 const SHORT = {
@@ -86,13 +86,18 @@ const GROUPS = {
 function groups(type) { return GROUPS[type] || []; }
 function activeGroups(type, s) { return groups(type).filter((g) => !g.when || g.when(s)); }
 
-/* первый верхний шкаф под сушилку не меняется */
+/* первый верхний шкаф под сушилку и последний угловой шкаф не меняются */
 function fixedFirst(g, s) { return g.key === 'swU' && s.susilka === 'da' && s.cols > 1; }
+function fixedLast(g, s) { return g.key === 'swU' && s.forma === 'ugol' && s.cols > 1; }
 function firstFree(g, s) { return fixedFirst(g, s) ? 1 : 0; }
-function canAdjust(g, s) { return s.cols - firstFree(g, s) >= 2; }
+/* индекс первого закреплённого шкафа в конце ряда, иначе число шкафов */
+function lastFree(g, s) { return s.cols - (fixedLast(g, s) ? 1 : 0); }
+function canAdjust(g, s) { return lastFree(g, s) - firstFree(g, s) >= 2; }
 
 function defaultSections(g, s) {
-  return g.key === 'swU' ? upperDefault(s[g.total], s.cols, s.susilka === 'da') : equalSections(s[g.total], s.cols);
+  return g.key === 'swU'
+    ? upperDefault(s[g.total], s.cols, s.susilka === 'da', s.forma === 'ugol')
+    : equalSections(s[g.total], s.cols);
 }
 
 function fitList(sw, w, cols) {
@@ -108,15 +113,22 @@ function fitList(sw, w, cols) {
 function fitGroup(g, s) {
   const arr = s[g.key];
   const total = s[g.total];
-  if (fixedFirst(g, s)) {
-    if (!Array.isArray(arr) || arr.length !== s.cols || arr[0] !== DRYER_CAB) return defaultSections(g, s);
-    return [DRYER_CAB, ...fitList(arr.slice(1), total - DRYER_CAB, s.cols - 1)];
+  if (fixedFirst(g, s) || fixedLast(g, s)) {
+    const a = firstFree(g, s), b = lastFree(g, s);
+    const head = fixedFirst(g, s) ? [DRYER_CAB] : [];
+    const tail = fixedLast(g, s) ? [CORNER_CAB] : [];
+    if (!Array.isArray(arr) || arr.length !== s.cols
+      || (head.length && arr[0] !== DRYER_CAB) || (tail.length && arr[s.cols - 1] !== CORNER_CAB)) {
+      return defaultSections(g, s);
+    }
+    const fixed = (head.length ? DRYER_CAB : 0) + (tail.length ? CORNER_CAB : 0);
+    return [...head, ...fitList(arr.slice(a, b), total - fixed, b - a), ...tail];
   }
   return fitList(arr, total, s.cols);
 }
 
 function neighbourOf(g, s, i) {
-  return i < s.cols - 1 ? i + 1 : i - 1;
+  return i < lastFree(g, s) - 1 ? i + 1 : i - 1;
 }
 
 function secId(g, i) { return `${g.key}:${i}`; }
@@ -145,7 +157,7 @@ function setSection(g, i, raw, source) {
   const s = values[state.type];
   const arr = s[g.key];
   const j = neighbourOf(g, s, i);
-  if (i < firstFree(g, s) || j < firstFree(g, s)) return;
+  if (i < firstFree(g, s) || j < firstFree(g, s) || i >= lastFree(g, s) || j >= lastFree(g, s)) return;
   const pair = arr[i] + arr[j];
   let v = Math.round(Number(raw) / SECTION_STEP) * SECTION_STEP;
   if (!Number.isFinite(v)) v = arr[i];
@@ -190,7 +202,8 @@ function readUrl() {
     const list = raw.split(',').map(Number);
     const ok = list.length === s.cols && list.every((x) => Number.isFinite(x) && x >= SECTION_MIN)
       && list.reduce((a, b) => a + b, 0) === s[g.total]
-      && (!fixedFirst(g, s) || list[0] === DRYER_CAB);
+      && (!fixedFirst(g, s) || list[0] === DRYER_CAB)
+      && (!fixedLast(g, s) || list[s.cols - 1] === CORNER_CAB);
     if (ok) s[g.key] = list;
   });
 }
@@ -210,7 +223,7 @@ let view = null;
 
 async function startScene() {
   try {
-    const { createScene } = await import('./scene.js?v=9');
+    const { createScene } = await import('./scene.js?v=10');
     view = createScene(el.stage, el.labels);
     el.status.hidden = true;
     refresh({ refit: true });
@@ -275,7 +288,7 @@ function fieldHtml(key, f, s) {
   if (f.kind === 'count') {
     /* aria-disabled, а не disabled: иначе после нажатия на край фокус
        клавиатуры уходит со страницы */
-    const atMin = s[key] <= f.min ? ' aria-disabled="true"' : '';
+    const atMin = s[key] <= minFor(f, s) ? ' aria-disabled="true"' : '';
     const atMax = s[key] >= maxFor(f, s) ? ' aria-disabled="true"' : '';
     return `<div class="kf kf--row">
       <span class="kf__label" id="l-${key}">${tr(f.label)}</span>
@@ -296,10 +309,11 @@ function fieldHtml(key, f, s) {
 /* Ширина каждого шкафа: ползунок отдаёт место соседнему */
 function sectionsHtml(g, s) {
   const free = firstFree(g, s);
+  const end = lastFree(g, s);
   const adjust = canAdjust(g, s);
   const rows = s[g.key].map((v, i) => {
-    if (i < free || !adjust) {
-      const why = i < free ? tr(', под сушилку') : '';
+    if (i < free || i >= end || !adjust) {
+      const why = i < free ? tr(', под сушилку') : i >= end ? tr(', угловой') : '';
       return `<div class="kf__sec kf__sec--fixed">
         <span class="kf__label">${tr(g.item)} ${i + 1}${why}</span>
         <span class="mono kf__fixed">${v} ${tr('мм')}</span>
@@ -312,7 +326,8 @@ function sectionsHtml(g, s) {
       ${sizeHtml(`data-sec="${id}"`, `data-secr="${id}"`, `sw-${g.key}-${i}`, `${tr(g.item)} ${i + 1}`, v, SECTION_MIN, max, SECTION_STEP)}
     </div>`;
   }).join('');
-  const dryerNote = free ? ` ${tr('Шкаф под сушилку фиксированный: внутри него ровно 80 см.')}` : '';
+  const dryerNote = (free ? ` ${tr('Шкаф под сушилку фиксированный: внутри него ровно 80 см.')}` : '')
+    + (end < s.cols ? ` ${tr('Угловой шкаф фиксированный: 60 × 60 см, дверь по диагонали.')}` : '');
   return `<div class="kf kf--secs">
     <span class="kf__label">${tr(g.title)}</span>
     <p class="kf__hint">${tr(g.hint)}${dryerNote}</p>
@@ -492,7 +507,7 @@ el.fields.addEventListener('change', (e) => {
   if (t.type === 'radio') {
     s[t.name] = t.value;
     /* сушилка меняет первый верхний шкаф: делим ширины заново */
-    if (t.name === 'susilka') groups(state.type).forEach((g) => { s[g.key] = defaultSections(g, s); });
+    if (t.name === 'susilka' || t.name === 'forma') groups(state.type).forEach((g) => { s[g.key] = defaultSections(g, s); });
     fitDependents(state.type);
     renderFields();
     refresh({ refit: true });

@@ -238,7 +238,26 @@ export function createScene(stage, labels) {
     dimLabels.push({ el, at: a2.clone().add(b2).multiplyScalar(0.5).addScaledVector(n, off * 0.55) });
   }
 
+  /* панель сложной формы (угловой шкаф): контур в плане выдавливается на толщину */
+  let polyGeos = [];
+  function makePoly(p, color) {
+    const shape = new THREE.Shape(p.poly.map(([x, z]) => new THREE.Vector2(x * MM, z * MM)));
+    const t = p.s[1] * MM;
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: t, bevelEnabled: false });
+    geo.translate(0, 0, -t / 2);
+    polyGeos.push(geo);
+    const mesh = new THREE.Mesh(geo, matFor(color, 'panel'));
+    mesh.rotation.x = Math.PI / 2;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    const edges = new THREE.EdgesGeometry(geo, 20);
+    polyGeos.push(edges);
+    mesh.add(new THREE.LineSegments(edges, lineFor(color.line)));
+    return mesh;
+  }
+
   function makeMesh(p, color) {
+    if (p.poly) return makePoly(p, color);
     const kind = p.k === 'stone' || p.k === 'metal' || p.k === 'plate' ? p.k : 'panel';
     if (kind === 'plate') {
       /* тарелка: цилиндр, ось повёрнута вдоль x, чтобы стояла на ребре */
@@ -281,7 +300,7 @@ export function createScene(stage, labels) {
   function placeMoving(t) {
     doorGroups.forEach((g) => {
       if (g.userData.axis === 'x') g.rotation.x = -LIFT_ANGLE * t;
-      else g.rotation.y = g.userData.dir * OPEN_ANGLE * t;
+      else g.rotation.y = g.userData.rot + g.userData.dir * OPEN_ANGLE * t;
     });
     slideGroups.forEach((g) => g.position.set(g.userData.dx * MM * t, 0, g.userData.dz * MM * t));
   }
@@ -294,6 +313,8 @@ export function createScene(stage, labels) {
   function update(model, color, opts) {
     clearGroup(root);
     clearGroup(dimLines);
+    polyGeos.forEach((g) => g.dispose());
+    polyGeos = [];
     labels.textContent = '';
     dimLabels = [];
     doorGroups = [];
@@ -313,6 +334,8 @@ export function createScene(stage, labels) {
       g.position.set(d.x * MM, (d.y || 0) * MM, d.z * MM);
       g.userData.dir = d.dir;
       g.userData.axis = d.axis || 'y';
+      /* дверь по диагонали стоит под углом ещё до открытия */
+      g.userData.rot = d.rot || 0;
       groups[d.g].add(g);
       pivots[d.id] = { g, d };
       g.visible = doorsShown;
@@ -332,7 +355,9 @@ export function createScene(stage, labels) {
       const mesh = makeMesh(p, color);
       if (p.door !== undefined) {
         const { g, d } = pivots[p.door];
-        mesh.position.set((p.p[0] - d.x) * MM, (p.p[1] - (d.y || 0)) * MM, (p.p[2] - d.z) * MM);
+        /* local: координаты уже заданы в системе повёрнутой двери */
+        if (p.local) mesh.position.set(p.p[0] * MM, (p.p[1] - (d.y || 0)) * MM, p.p[2] * MM);
+        else mesh.position.set((p.p[0] - d.x) * MM, (p.p[1] - (d.y || 0)) * MM, (p.p[2] - d.z) * MM);
         g.add(mesh);
       } else {
         mesh.position.set(p.p[0] * MM, p.p[1] * MM, p.p[2] * MM);

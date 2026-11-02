@@ -25,6 +25,9 @@ export const PRICE = {
 };
 
 const T = 16;          /* толщина панели */
+/* Угловой верхний шкаф угловой кухни: 600 × 600 мм по стенам, срез по диагонали,
+   одна дверь по диагонали. Ширина фиксирована, как у шкафа под сушилку. */
+export const CORNER_CAB = 600;
 const PL = 80;         /* цоколь шкафа */
 
 /* Отсеки шкафа: самый узкий допустимый и деление поровну */
@@ -55,12 +58,15 @@ export const TYPES = {
       hLow: { kind: 'size', label: 'Высота нижних шкафов', min: 600, max: 900, step: 10, def: 720,
         when: (s) => s.nizh === 'da' },
       wUp: { kind: 'size', label: 'Ширина верхних шкафов', min: 1200, max: 4200, step: 50, def: 2600,
-        minFn: (s) => (s.susilka === 'da' ? DRYER_CAB + (s.cols - 1) * SECTION_MIN : s.cols * SECTION_MIN) },
+        minFn: (s) => (s.susilka === 'da' ? DRYER_CAB : 0) + (s.forma === 'ugol' ? CORNER_CAB : 0)
+          + (s.cols - (s.susilka === 'da' ? 1 : 0) - (s.forma === 'ugol' ? 1 : 0)) * SECTION_MIN },
       w2Up: { kind: 'size', label: 'Вторая сторона верхних шкафов', min: 1200, max: 3000, step: 50, def: 1800,
         when: (s) => s.forma === 'ugol' },
       dUp: { kind: 'size', label: 'Глубина верхних шкафов', min: 300, max: 450, step: 10, def: 350 },
       hUp: { kind: 'size', label: 'Высота верхних шкафов', min: 600, max: 1000, step: 10, def: 700 },
-      cols: { kind: 'count', label: 'Шкафов в ряду', min: 2, max: 8, def: 4 },
+      /* сушилка и угловой шкаф занимают по одному месту, свободный шкаф нужен хотя бы один */
+      cols: { kind: 'count', label: 'Шкафов в ряду', min: 2, max: 8, def: 4,
+        minFn: (s) => 1 + (s.susilka === 'da' ? 1 : 0) + (s.forma === 'ugol' ? 1 : 0) },
       /* полки внутри каждого шкафа, кроме шкафа с сушилкой */
       shelves: { kind: 'count', label: 'Полок в шкафу', min: 0, max: 4, def: 1 },
       nizh: { kind: 'choice', label: 'Нижние шкафы', def: 'net',
@@ -130,6 +136,19 @@ export const COLORS = {
    s: размер [x, y, z], p: центр [x, y, z]. Кромка считается в смете сама. */
 function part(list, k, s, p, extra) {
   list.push(Object.assign({ k, s, p, g: 'a' }, extra));
+}
+
+/* Горизонтальная панель сложной формы. pts это точки [x, z] в координатах
+   группы, y это центр по высоте. Площадь и периметр считаются здесь, потому что
+   по размерам прямоугольника их не найти. */
+function polyPart(list, y, pts, g) {
+  let area = 0, perim = 0;
+  pts.forEach((a, i) => {
+    const b = pts[(i + 1) % pts.length];
+    area += a[0] * b[1] - b[0] * a[1];
+    perim += Math.hypot(b[0] - a[0], b[1] - a[1]);
+  });
+  list.push({ k: 'body', s: [0, T, 0], p: [0, y, 0], g, poly: pts, area: Math.abs(area) / 2, perim });
 }
 
 /* Дверь, поднимающаяся вверх: петли сверху, газлифты по бокам. Ось поворота
@@ -294,10 +313,11 @@ function addDryer(m, g, cx, innerW, dep, upY, upH) {
 
 /* Ширины верхних шкафов по умолчанию. С сушилкой первый шкаф всегда
    DRYER_CAB, остальные делят то, что осталось. */
-export function upperDefault(len, cols, dryer) {
-  return dryer && cols > 1
-    ? [DRYER_CAB, ...equalSections(len - DRYER_CAB, cols - 1)]
-    : equalSections(len, cols);
+export function upperDefault(len, cols, dryer, corner) {
+  const head = dryer && cols > 1 ? [DRYER_CAB] : [];
+  const tail = corner ? [CORNER_CAB] : [];
+  const sum = (a) => a.reduce((x, y) => x + y, 0);
+  return [...head, ...equalSections(len - sum(head) - sum(tail), cols - head.length - tail.length), ...tail];
 }
 
 function validWidths(sw, len, cols) {
@@ -339,7 +359,7 @@ function kitchenLower(m, g, from, widths, d, hLow, shelves) {
 /* Верхний ряд: от from, ширины в массиве widths, низ шкафов на высоте 1400 мм.
    Шкаф под сушилку это первый, если его ширина ровно DRYER_CAB.
    Группа c это вторая сторона верхнего ряда угловой кухни. */
-function kitchenUpper(m, g, from, widths, upD, hUp, dryer, shelves) {
+function kitchenUpper(m, g, from, widths, upD, hUp, dryer, shelves, corner) {
   const P = m.parts;
   const upY = 1400, upH = hUp;
   const hasDryer = dryer && widths[0] === DRYER_CAB;
@@ -347,6 +367,10 @@ function kitchenUpper(m, g, from, widths, upD, hUp, dryer, shelves) {
   widths.forEach((uW, i) => {
     const x0 = xs, x1 = x0 + uW, cx = (x0 + x1) / 2;
     xs = x1;
+    if (corner && i === widths.length - 1) {
+      addCornerUpper(m, g, x1, upD, upY, upH, shelves);
+      return;
+    }
     const dep = upD - T;
     [x0 + T / 2, x1 - T / 2].forEach((x) => part(P, 'body', [T, upH, dep], [x, upY + upH / 2, dep / 2], { g }));
     [upY + T / 2, upY + upH - T / 2].forEach((y) => part(P, 'body', [uW - 2 * T, T, dep], [cx, y, dep / 2], { g }));
@@ -371,6 +395,33 @@ function kitchenUpper(m, g, from, widths, upD, hUp, dryer, shelves) {
   });
 }
 
+/* Угловой верхний шкаф: пятиугольник в плане. Угол стен в точке (X1, 0): задняя
+   стенка вдоль первой стены идёт от X1 - 600 до X1, вторая вдоль z до 600.
+   Боковины глубиной D у концов обеих стен, между ними одна дверь по диагонали
+   от (X1 - 600, D) до (X1 - D, 600). Для D = 350 это 353 мм. Дверь стоит лицом
+   по линии среза, корпус отступает от неё на толщину двери. */
+function addCornerUpper(m, g, X1, D, upY, upH, shelves) {
+  const P = m.parts, W = CORNER_CAB, q = T * Math.SQRT2;
+  const xl = X1 - W, cy = upY + upH / 2;
+  part(P, 'body', [T, upH, D], [xl + T / 2, cy, D / 2], { g });
+  part(P, 'body', [D, upH, T], [X1 - D / 2, cy, W - T / 2], { g });
+  part(P, 'back', [W, upH, 4], [xl + W / 2, cy, 2], { g });
+  part(P, 'back', [4, upH, W], [X1 - 2, cy, W / 2], { g });
+  const pts = [[xl + T, 0], [X1, 0], [X1, W - T], [X1 - D - T + q, W - T], [xl + T, D + T - q]];
+  [upY + T / 2, upY + upH - T / 2].forEach((y) => polyPart(P, y, pts, g));
+  for (let k = 1; k <= shelves; k++) {
+    polyPart(P, upY + T + (k * (upH - 2 * T)) / (shelves + 1), pts, g);
+  }
+  /* дверь: ось вращения у конца среза возле второй стены, плоскость повёрнута на 45° */
+  const r = Math.SQRT1_2;
+  const wd = Math.SQRT2 * (W - D) - 3;
+  const y0 = upY + 2, y1 = upY + upH - 2;
+  const id = m.doors.length;
+  m.doors.push({ id, g, x: X1 - D - 1.5 * r, z: W - 1.5 * r, dir: 1, h: y1 - y0, rot: -Math.PI / 4 });
+  part(P, 'front', [wd, y1 - y0, T], [-wd / 2, (y0 + y1) / 2, T / 2], { door: id, g, local: true });
+  part(P, 'metal', [10, 130, 10], [-wd + 34, upY + 90, T + 12], { door: id, g, hw: 'handle', local: true });
+}
+
 function buildKuhnya(s) {
   const m = { parts: [], doors: [], dims: [] };
   const lower = s.nizh === 'da';
@@ -381,7 +432,8 @@ function buildKuhnya(s) {
   /* неверные данные из адреса не ломают модель: тогда шкафы делятся поровну */
   const swL = validWidths(s.swL, wL, cols) ? s.swL : equalSections(wL, cols);
   const swU = validWidths(s.swU, wU, cols) && (!dryer || s.swU[0] === DRYER_CAB || cols === 1)
-    ? s.swU : upperDefault(wU, cols, dryer);
+    && (!ugol || s.swU[cols - 1] === CORNER_CAB)
+    ? s.swU : upperDefault(wU, cols, dryer, ugol);
   /* ряды выровнены по левому краю */
   const x0 = -(lower ? Math.max(wL, wU) : wU) / 2;
   const topY = 1400 + hUp;
@@ -389,7 +441,7 @@ function buildKuhnya(s) {
 
   const shelves = s.shelves;
   if (lower) kitchenLower(m, 'a', x0, swL, dL, hLow, shelves);
-  kitchenUpper(m, 'a', x0, swU, dU, hUp, dryer, shelves);
+  kitchenUpper(m, 'a', x0, swU, dU, hUp, dryer, shelves, ugol);
 
   m.dims.push({ a: [x0, topY, zUp], b: [x0 + wU, topY, zUp], n: [0, 1, 0], v: wU });
   if (lower && wL !== wU) {
@@ -407,9 +459,10 @@ function buildKuhnya(s) {
       kitchenLower(m, 'b', 0, equalSections(len, wc), dL, hLow, shelves);
       m.dims.push({ a: [x0 + wL, 0, 0], b: [x0 + wL, 0, s.w2], n: [1, 0, 0], v: s.w2 });
     }
-    const lenU = s.w2Up - dU;
+    /* вторая сторона верхнего ряда начинается за угловым шкафом */
+    const lenU = s.w2Up - CORNER_CAB;
     const wcU = Math.max(1, Math.round(lenU / (wU / cols)));
-    m.wingUp = { x: x0 + wU, z: dU };
+    m.wingUp = { x: x0 + wU, z: CORNER_CAB };
     kitchenUpper(m, 'c', 0, equalSections(lenU, wcU), dU, hUp, false, shelves);
     if (!lower || s.w2Up !== s.w2 || wU !== wL) {
       m.dims.push({ a: [x0 + wU, topY, 0], b: [x0 + wU, topY, s.w2Up], n: [1, 0, 0], v: s.w2Up });
@@ -540,6 +593,7 @@ export function estimate(model) {
   let area = 0, edge = 0, backArea = 0;
   model.parts.forEach((p) => {
     if (p.k !== 'body' && p.k !== 'front' && p.k !== 'back') return;
+    if (p.poly) { area += p.area; edge += p.perim; return; }
     const [a, b] = p.s.slice().sort((x, y) => y - x);
     /* задние стенки и дно ящиков: дешёвый тонкий лист, кромки нет */
     if (p.k === 'back') { backArea += a * b; return; }
@@ -606,6 +660,7 @@ export function describe(type, s, tr) {
       T('Верхние шкафы: ширина {w} мм{l}, глубина {d} мм, высота {h} мм', {
         w: ugol ? `${s.wUp} × ${s.w2Up}` : s.wUp, l: list(s.swU, s.wUp), d: s.dUp, h: s.hUp }),
       T('Шкафов в ряду: {n}', { n: s.cols }),
+      ...(ugol ? [T('Верхний угловой шкаф со срезом: 600 × 600 мм, дверь по диагонали')] : []),
       ...(s.shelves > 0 ? [T(s.susilka === 'da' ? 'Полок в каждом шкафу, кроме шкафа с сушилкой: {n}' : 'Полок в каждом шкафу: {n}', { n: s.shelves })] : []),
       ...(s.susilka === 'da' ? [T('Сушилка для посуды 80 см в первом верхнем шкафу')] : [])
     ];
