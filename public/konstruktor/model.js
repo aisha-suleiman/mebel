@@ -5,6 +5,7 @@
 /* ---------- Цены: всё, что меняется, только здесь ---------- */
 export const PRICE = {
   sheetUsd: 55,        /* лист МДФ */
+  cutUsdPerSheet: 10,  /* раскрой и обрезка МДФ за лист, по площади деталей */
   backSheetUsd: 10,    /* лист для задних стенок и дна ящиков, размер листа тот же */
   sheetW: 2100,
   sheetH: 2800,
@@ -14,7 +15,10 @@ export const PRICE = {
   /* комплект направляющих: длина в мм и цена. Берём самую длинную, что
      не длиннее ящика, а для совсем короткого ящика самую короткую. */
   slidePrices: { 300: 2, 500: 3, 600: 5 },
-  kupeRailsUsd: 8,     /* рельсы купе: верхний и нижний, один комплект на шкаф */
+  gasLiftPairUsd: 2,   /* пара газлифтов подъёмной двери, один комплект на дверь */
+  rollerUsd: 1,        /* ролик створки купе */
+  rollersPerDoor: 4,
+  kupeRailUsdPerM: 3.5, /* рельсы купе за погонный метр, считаем верхний и нижний */
   railUsdPerM: 1,      /* штанга для одежды за погонный метр */
   dryerUsd: 15,        /* сушилка для посуды шириной 90 см */
   markup: 1.5          /* ко всей себестоимости плюс 50 % */
@@ -39,12 +43,25 @@ export const TYPES = {
     fields: {
       forma: { kind: 'choice', label: 'Форма', def: 'pryam',
         options: { pryam: 'Прямая', ugol: 'Угловая' } },
-      w: { kind: 'size', label: 'Длина', min: 1200, max: 4200, step: 50, def: 2400 },
-      w2: { kind: 'size', label: 'Вторая сторона', min: 1200, max: 3000, step: 50, def: 1800,
+      /* ряды задаются отдельно: нижние и верхние шкафы могут отличаться по
+         ширине и глубине. Без нижних шкафов поля нижнего ряда не нужны.
+         minFn: каждый шкаф не уже SECTION_MIN, шкаф под сушилку шире. */
+      w: { kind: 'size', label: 'Ширина нижних шкафов', min: 1200, max: 4200, step: 50, def: 2400,
+        minFn: (s) => s.cols * SECTION_MIN, when: (s) => s.nizh === 'da' },
+      w2: { kind: 'size', label: 'Вторая сторона нижних шкафов', min: 1200, max: 3000, step: 50, def: 1800,
+        when: (s) => s.forma === 'ugol' && s.nizh === 'da' },
+      d: { kind: 'size', label: 'Глубина нижних шкафов', min: 350, max: 650, step: 10, def: 600,
+        when: (s) => s.nizh === 'da' },
+      hLow: { kind: 'size', label: 'Высота нижних шкафов', min: 600, max: 900, step: 10, def: 720,
+        when: (s) => s.nizh === 'da' },
+      wUp: { kind: 'size', label: 'Ширина верхних шкафов', min: 1200, max: 4200, step: 50, def: 2600,
+        minFn: (s) => (s.susilka === 'da' ? DRYER_CAB + (s.cols - 1) * SECTION_MIN : s.cols * SECTION_MIN) },
+      w2Up: { kind: 'size', label: 'Вторая сторона верхних шкафов', min: 1200, max: 3000, step: 50, def: 1800,
         when: (s) => s.forma === 'ugol' },
-      d: { kind: 'size', label: 'Глубина', min: 450, max: 650, step: 10, def: 600 },
+      dUp: { kind: 'size', label: 'Глубина верхних шкафов', min: 300, max: 450, step: 10, def: 350 },
+      hUp: { kind: 'size', label: 'Высота верхних шкафов', min: 600, max: 1000, step: 10, def: 700 },
       cols: { kind: 'count', label: 'Шкафов в ряду', min: 2, max: 8, def: 4 },
-      nizh: { kind: 'choice', label: 'Нижние шкафы', def: 'da',
+      nizh: { kind: 'choice', label: 'Нижние шкафы', def: 'net',
         options: { da: 'С нижними', net: 'Без нижних' } },
       susilka: { kind: 'choice', label: 'Сушилка для посуды', def: 'da',
         options: { net: 'Без сушилки', da: 'С сушилкой 90 см' } }
@@ -53,10 +70,10 @@ export const TYPES = {
   shkaf: {
     label: 'Шкаф',
     fields: {
-      w: { kind: 'size', label: 'Ширина', min: 600, max: 2800, step: 10, def: 1800 },
-      h: { kind: 'size', label: 'Высота', min: 1800, max: 2700, step: 10, def: 2400 },
+      w: { kind: 'size', label: 'Ширина', min: 600, max: 2800, step: 10, def: 2000 },
+      h: { kind: 'size', label: 'Высота', min: 1800, max: 2700, step: 10, def: 1800 },
       d: { kind: 'size', label: 'Глубина', min: 350, max: 600, step: 10, def: 600 },
-      cols: { kind: 'count', label: 'Отсеков', min: 1, max: 6, def: 3 },
+      cols: { kind: 'count', label: 'Отсеков', min: 1, max: 6, def: 2 },
       /* верхний предел зависит от числа отсеков: maxOf */
       shtanga: { kind: 'count', label: 'Со штангой для одежды', min: 0, max: 6, maxOf: 'cols', def: 1 },
       rows: { kind: 'count', label: 'Полок в отсеке', min: 1, max: 7, def: 4,
@@ -80,13 +97,13 @@ export const TYPES = {
     fields: {
       /* с тумбами стол должен быть длиннее, иначе не останется места для ног:
          minFn поднимает нижний предел */
-      w: { kind: 'size', label: 'Длина', min: 800, max: 2400, step: 10, def: 1400,
+      w: { kind: 'size', label: 'Длина', min: 800, max: 2400, step: 10, def: 1800,
         minFn: (s) => (s.tumby === 'dve' ? 1300 : s.tumby === 'odna' ? 1000 : 800) },
-      d: { kind: 'size', label: 'Глубина', min: 500, max: 1000, step: 10, def: 700 },
+      d: { kind: 'size', label: 'Ширина', min: 500, max: 1000, step: 10, def: 750 },
       h: { kind: 'size', label: 'Высота', min: 700, max: 800, step: 5, def: 750 },
-      tumby: { kind: 'choice', label: 'Тумбы', def: 'net',
+      tumby: { kind: 'choice', label: 'Тумбы', def: 'dve',
         options: { net: 'Без тумб', odna: 'С одной стороны', dve: 'С двух сторон' } },
-      front: { kind: 'choice', label: 'Тумба', def: 'yashiki',
+      front: { kind: 'choice', label: 'Тумба', def: 'dverca',
         options: { dverca: 'С дверцей', yashiki: 'С ящиками', smesh: 'Дверца слева, ящики справа' },
         /* смешанный вариант возможен, только если тумбы с обеих сторон */
         optionOk: { smesh: (s) => s.tumby === 'dve' },
@@ -109,6 +126,17 @@ export const COLORS = {
    s: размер [x, y, z], p: центр [x, y, z]. Кромка считается в смете сама. */
 function part(list, k, s, p, extra) {
   list.push(Object.assign({ k, s, p, g: 'a' }, extra));
+}
+
+/* Дверь, поднимающаяся вверх: петли сверху, газлифты по бокам. Ось поворота
+   горизонтальная, поэтому в d есть axis: 'x' и верхняя кромка y. */
+function addLiftDoor(m, g, x0, x1, y0, y1, z) {
+  const id = m.doors.length;
+  const w = x1 - x0, h = y1 - y0, cx = (x0 + x1) / 2;
+  m.doors.push({ id, g, x: cx, y: y1, z, axis: 'x', dir: 1, h });
+  part(m.parts, 'front', [w, h, T], [cx, (y0 + y1) / 2, z + T / 2], { door: id, g });
+  /* ручка снизу по центру, горизонтальная */
+  part(m.parts, 'metal', [Math.min(160, w * 0.3), 10, 10], [cx, y0 + 40, z + T + 12], { door: id, g, hw: 'handle' });
 }
 
 function addDoor(m, g, x0, x1, y0, y1, z, hingeLeft, handleY) {
@@ -137,7 +165,7 @@ function addKupe(m, w, h, d) {
   const zBack = zFront - T - 18;
 
   part(P, 'metal', [w - 2 * T, 24, KUPE_ZONE - 10], [0, h - 12, d - KUPE_ZONE / 2], { hw: 'kupe' });
-  part(P, 'metal', [w - 2 * T, 6, KUPE_ZONE - 10], [0, PL + 3, d - KUPE_ZONE / 2]);
+  part(P, 'metal', [w - 2 * T, 6, KUPE_ZONE - 10], [0, PL + 3, d - KUPE_ZONE / 2], { hw: 'kupe' });
 
   for (let i = 0; i < n; i++) {
     const front = i % 2 === 0;
@@ -150,7 +178,7 @@ function addKupe(m, w, h, d) {
       m.drawers.push({ id, g: 'a', dx: -step, dz: 0 });
     }
     const extra = id === undefined ? {} : { drawer: id };
-    part(P, 'front', [dw, y1 - y0, T], [x, (y0 + y1) / 2, z], extra);
+    part(P, 'front', [dw, y1 - y0, T], [x, (y0 + y1) / 2, z], { ...extra, hw: 'kupedoor' });
     part(P, 'metal', [8, Math.min(900, (y1 - y0) * 0.5), 6], [x + (front ? dw / 2 - 24 : -dw / 2 + 24), (y0 + y1) / 2, z + T / 2 + 3], { ...extra, hw: 'handle' });
   }
 }
@@ -232,7 +260,7 @@ function buildShkaf(s) {
 /* Сушилка для посуды: два яруса прутков над поддоном. Размер сушилки это
    внутренняя ширина шкафа. Это фурнитура: в расчёт идёт по цене штуки. */
 const DRYER_W = 900;
-const DRYER_CAB = DRYER_W + 2 * T;
+export const DRYER_CAB = DRYER_W + 2 * T;
 
 function addDryer(m, g, cx, innerW, dep, upY, upH) {
   const P = m.parts;
@@ -260,78 +288,120 @@ function addDryer(m, g, cx, innerW, dep, upY, upH) {
   }
 }
 
-/* Один ряд кухни вдоль оси x, от from на длину len. Группа b это вторая сторона. */
-function kitchenRun(m, g, from, len, cols, d, lower, upFrom, dryer) {
+/* Ширины верхних шкафов по умолчанию. С сушилкой первый шкаф всегда
+   DRYER_CAB, остальные делят то, что осталось. */
+export function upperDefault(len, cols, dryer) {
+  return dryer && cols > 1
+    ? [DRYER_CAB, ...equalSections(len - DRYER_CAB, cols - 1)]
+    : equalSections(len, cols);
+}
+
+function validWidths(sw, len, cols) {
+  return Array.isArray(sw) && sw.length === cols
+    && sw.every((x) => x >= SECTION_MIN) && sw.reduce((a, b) => a + b, 0) === len;
+}
+
+/* Нижний ряд: шкафы вдоль оси x, от from, ширины в массиве widths, с цоколем
+   и столешницей. Группа b это вторая сторона угловой кухни. */
+function kitchenLower(m, g, from, widths, d, hLow) {
   const P = m.parts;
-  const plinth = 100, baseH = 720, upY = 1400, upH = 720, upD = 320;
-  const modW = len / cols;
+  const plinth = 100, baseH = hLow;
+  const len = widths.reduce((a, b) => a + b, 0);
   const y0 = plinth, y1 = plinth + baseH;
 
-  /* нижние шкафы вместе со столешницей необязательны */
-  if (lower) {
-    part(P, 'body', [len, plinth, T], [from + len / 2, plinth / 2, d - 50], { g });
-    for (let i = 0; i < cols; i++) {
-      const x0 = from + i * modW, x1 = x0 + modW, cx = (x0 + x1) / 2;
-      const dep = d - T;
-      /* боковины до пола: иначе под шкафом с торца виден пустой зазор */
-      [x0 + T / 2, x1 - T / 2].forEach((x) => part(P, 'body', [T, y1, dep], [x, y1 / 2, dep / 2], { g }));
-      part(P, 'body', [modW - 2 * T, T, dep], [cx, y0 + T / 2, dep / 2], { g });
-      part(P, 'body', [modW - 2 * T, T, dep - 20], [cx, y0 + baseH / 2, dep / 2], { g });
-      part(P, 'back', [modW, baseH, 4], [cx, y0 + baseH / 2, 2], { g });
-      const each = modW > 620 ? 2 : 1;
-      const dw = modW / each;
-      for (let j = 0; j < each; j++) {
-        const a = x0 + j * dw + 1.5;
-        addDoor(m, g, a, a + dw - 3, y0 + 2, y1 - 2, dep, j % 2 === 0, y1 - 90);
-      }
+  part(P, 'body', [len, plinth, T], [from + len / 2, plinth / 2, d - 50], { g });
+  let xs = from;
+  widths.forEach((modW) => {
+    const x0 = xs, x1 = x0 + modW, cx = (x0 + x1) / 2;
+    xs = x1;
+    const dep = d - T;
+    /* боковины до пола: иначе под шкафом с торца виден пустой зазор */
+    [x0 + T / 2, x1 - T / 2].forEach((x) => part(P, 'body', [T, y1, dep], [x, y1 / 2, dep / 2], { g }));
+    part(P, 'body', [modW - 2 * T, T, dep], [cx, y0 + T / 2, dep / 2], { g });
+    part(P, 'body', [modW - 2 * T, T, dep - 20], [cx, y0 + baseH / 2, dep / 2], { g });
+    part(P, 'back', [modW, baseH, 4], [cx, y0 + baseH / 2, 2], { g });
+    const each = modW > 620 ? 2 : 1;
+    const dw = modW / each;
+    for (let j = 0; j < each; j++) {
+      const a = x0 + j * dw + 1.5;
+      addDoor(m, g, a, a + dw - 3, y0 + 2, y1 - 2, dep, j % 2 === 0, y1 - 90);
     }
-    part(P, 'stone', [len, 38, d + 20], [from + len / 2, y1 + 19, (d + 20) / 2], { g });
-  }
+  });
+  part(P, 'stone', [len, 38, d + 20], [from + len / 2, y1 + 19, (d + 20) / 2], { g });
+}
 
-  {
-    const uLen = from + len - upFrom;
-    /* Шкаф под сушилку: внутри ровно DRYER_W, остальные верхние шкафы делят
-       оставшуюся длину, сохраняя примерно прежний размер модуля. */
-    const hasDryer = dryer && uLen >= DRYER_CAB + 150;
-    let widths = Array(cols).fill(uLen / cols);
-    if (hasDryer) {
-      const n = Math.max(1, Math.round((uLen - DRYER_CAB) / (uLen / cols)));
-      widths = [DRYER_CAB, ...Array(n).fill((uLen - DRYER_CAB) / n)];
+/* Верхний ряд: от from, ширины в массиве widths, низ шкафов на высоте 1400 мм.
+   Шкаф под сушилку это первый, если его ширина ровно DRYER_CAB.
+   Группа c это вторая сторона верхнего ряда угловой кухни. */
+function kitchenUpper(m, g, from, widths, upD, hUp, dryer) {
+  const P = m.parts;
+  const upY = 1400, upH = hUp;
+  const hasDryer = dryer && widths[0] === DRYER_CAB;
+  let xs = from;
+  widths.forEach((uW, i) => {
+    const x0 = xs, x1 = x0 + uW, cx = (x0 + x1) / 2;
+    xs = x1;
+    const dep = upD - T;
+    [x0 + T / 2, x1 - T / 2].forEach((x) => part(P, 'body', [T, upH, dep], [x, upY + upH / 2, dep / 2], { g }));
+    [upY + T / 2, upY + upH - T / 2].forEach((y) => part(P, 'body', [uW - 2 * T, T, dep], [cx, y, dep / 2], { g }));
+    part(P, 'back', [uW, upH, 4], [cx, upY + upH / 2, 2], { g });
+    if (hasDryer && i === 0) addDryer(m, g, cx, uW - 2 * T, dep, upY, upH);
+    /* шкаф с сушилкой всегда закрывает одна дверь вверх на газлифтах */
+    if (hasDryer && i === 0) {
+      addLiftDoor(m, g, x0 + 1.5, x1 - 1.5, upY + 2, upY + upH - 2, dep);
+      return;
     }
-    let xs = upFrom;
-    widths.forEach((uW, i) => {
-      const x0 = xs, x1 = x0 + uW, cx = (x0 + x1) / 2;
-      xs = x1;
-      const dep = upD - T;
-      [x0 + T / 2, x1 - T / 2].forEach((x) => part(P, 'body', [T, upH, dep], [x, upY + upH / 2, dep / 2], { g }));
-      [upY + T / 2, upY + upH - T / 2].forEach((y) => part(P, 'body', [uW - 2 * T, T, dep], [cx, y, dep / 2], { g }));
-      part(P, 'back', [uW, upH, 4], [cx, upY + upH / 2, 2], { g });
-      if (hasDryer && i === 0) addDryer(m, g, cx, uW - 2 * T, dep, upY, upH);
-      const each = uW > 620 ? 2 : 1;
-      const dw = uW / each;
-      for (let j = 0; j < each; j++) {
-        const a = x0 + j * dw + 1.5;
-        addDoor(m, g, a, a + dw - 3, upY + 2, upY + upH - 2, dep, j % 2 === 0, upY + 90);
-      }
-    });
-  }
+    const each = uW > 620 ? 2 : 1;
+    const dw = uW / each;
+    for (let j = 0; j < each; j++) {
+      const a = x0 + j * dw + 1.5;
+      addDoor(m, g, a, a + dw - 3, upY + 2, upY + upH - 2, dep, j % 2 === 0, upY + 90);
+    }
+  });
 }
 
 function buildKuhnya(s) {
   const m = { parts: [], doors: [], dims: [] };
-  const { w, d, cols } = s;
   const lower = s.nizh === 'da';
   const ugol = s.forma === 'ugol';
-  kitchenRun(m, 'a', -w / 2, w, cols, d, lower, -w / 2, s.susilka === 'da');
-  const top = 2120;
-  m.dims.push({ a: [-w / 2, top, ugol ? 0 : d], b: [w / 2, top, ugol ? 0 : d], n: [0, 1, 0], v: w });
-  m.dims.push({ a: [-w / 2, 0, 0], b: [-w / 2, 0, d], n: [-1, 0, 0], v: d });
+  const dryer = s.susilka === 'da';
+  const { cols, hUp, hLow } = s;
+  const wL = s.w, dL = s.d, wU = s.wUp, dU = s.dUp;
+  /* неверные данные из адреса не ломают модель: тогда шкафы делятся поровну */
+  const swL = validWidths(s.swL, wL, cols) ? s.swL : equalSections(wL, cols);
+  const swU = validWidths(s.swU, wU, cols) && (!dryer || s.swU[0] === DRYER_CAB || cols === 1)
+    ? s.swU : upperDefault(wU, cols, dryer);
+  /* ряды выровнены по левому краю */
+  const x0 = -(lower ? Math.max(wL, wU) : wU) / 2;
+  const topY = 1400 + hUp;
+  const zUp = ugol ? 0 : dU;
+
+  if (lower) kitchenLower(m, 'a', x0, swL, dL, hLow);
+  kitchenUpper(m, 'a', x0, swU, dU, hUp, dryer);
+
+  m.dims.push({ a: [x0, topY, zUp], b: [x0 + wU, topY, zUp], n: [0, 1, 0], v: wU });
+  if (lower && wL !== wU) {
+    const cy = 100 + hLow + 38;
+    m.dims.push({ a: [x0, cy, ugol ? 0 : dL], b: [x0 + wL, cy, ugol ? 0 : dL], n: [0, 1, 0], v: wL });
+  }
+  if (lower) m.dims.push({ a: [x0, 0, 0], b: [x0, 0, dL], n: [-1, 0, 0], v: dL });
+  if (!lower || dU !== dL) m.dims.push({ a: [x0, 1400, 0], b: [x0, 1400, dU], n: [-1, 0, 0], v: dU });
+
   if (ugol) {
-    const len = s.w2 - d;
-    const wc = Math.max(1, Math.round(len / (w / cols)));
-    m.wing = { x: w / 2, z: d };
-    kitchenRun(m, 'b', 0, len, wc, d, lower, 320 - d);
-    m.dims.push({ a: [w / 2, 0, 0], b: [w / 2, 0, s.w2], n: [1, 0, 0], v: s.w2 });
+    if (lower) {
+      const len = s.w2 - dL;
+      const wc = Math.max(1, Math.round(len / (wL / cols)));
+      m.wing = { x: x0 + wL, z: dL };
+      kitchenLower(m, 'b', 0, equalSections(len, wc), dL, hLow);
+      m.dims.push({ a: [x0 + wL, 0, 0], b: [x0 + wL, 0, s.w2], n: [1, 0, 0], v: s.w2 });
+    }
+    const lenU = s.w2Up - dU;
+    const wcU = Math.max(1, Math.round(lenU / (wU / cols)));
+    m.wingUp = { x: x0 + wU, z: dU };
+    kitchenUpper(m, 'c', 0, equalSections(lenU, wcU), dU, hUp, false);
+    if (!lower || s.w2Up !== s.w2 || wU !== wL) {
+      m.dims.push({ a: [x0 + wU, topY, 0], b: [x0 + wU, topY, s.w2Up], n: [1, 0, 0], v: s.w2Up });
+    }
   }
   return m;
 }
@@ -469,12 +539,14 @@ export function estimate(model) {
   const sheetM2 = (PRICE.sheetW * PRICE.sheetH) / 1e6;
   const backCost = (backArea / 1e6) * (PRICE.backSheetUsd / sheetM2);
   const material = m2 * usdPerM2 + backCost;
+  const cutCost = (m2 / sheetM2) * PRICE.cutUsdPerSheet;
   const edgeM = edge / 1000;
   const edgeCost = PRICE.edgeUsdPerM ? edgeM * PRICE.edgeUsdPerM : 0;
 
   /* Фурнитура. Петли по высоте двери, по обычному правилу мебельщиков;
      ручка одна на каждую дверь, ящик и створку купе. */
   const hinges = model.doors.reduce((n, d) => n + hingesFor(d.h), 0);
+  const lifts = model.doors.filter((d) => d.axis === 'x').length;
   const handles = model.parts.filter((p) => p.hw === 'handle').length;
   /* Направляющие: настоящие стандартные длины идут шагом 50 мм, поэтому
      длину округляем вниз до 50 и считаем цену пропорционально длине. */
@@ -485,12 +557,14 @@ export function estimate(model) {
   const dryers = model.parts.filter((p) => p.hw === 'dryer').length;
   const railM = model.parts.filter((p) => p.hw === 'rail').reduce((a, p) => a + p.s[0], 0) / 1000;
   const railCost = railM * PRICE.railUsdPerM;
-  const kupeSets = model.parts.filter((p) => p.hw === 'kupe').length;
-  const hardware = hinges * PRICE.hingeUsd + handles * PRICE.handleUsd + slideCost + dryers * PRICE.dryerUsd + railCost + kupeSets * PRICE.kupeRailsUsd;
+  const kupeM = model.parts.filter((p) => p.hw === 'kupe').reduce((a, p) => a + p.s[0], 0) / 1000;
+  const kupeDoors = model.parts.filter((p) => p.hw === 'kupedoor').length;
+  const kupeCost = kupeM * PRICE.kupeRailUsdPerM + kupeDoors * PRICE.rollersPerDoor * PRICE.rollerUsd;
+  const hardware = hinges * PRICE.hingeUsd + handles * PRICE.handleUsd + slideCost + dryers * PRICE.dryerUsd + railCost + kupeCost + lifts * PRICE.gasLiftPairUsd;
 
   return {
-    m2, backM2: backArea / 1e6, backCost, edgeM, material, edgeCost, hinges, handles, slides, slideCost, dryers, railM, railCost, hardware,
-    usd: Math.round((material + edgeCost + hardware) * PRICE.markup)
+    m2, sheets: m2 / sheetM2, cutCost, backM2: backArea / 1e6, backCost, edgeM, material, edgeCost, hinges, handles, slides, slideCost, dryers, lifts, kupeDoors, railM, railCost, hardware,
+    usd: Math.round((material + cutCost + edgeCost + hardware) * PRICE.markup)
   };
 }
 
@@ -504,13 +578,18 @@ export function hingesFor(doorH) {
 export function describe(type, s) {
   const t = TYPES[type].label;
   if (type === 'kuhnya') {
-    const size = s.forma === 'ugol' ? `${s.w} × ${s.w2}` : `${s.w}`;
+    const ugol = s.forma === 'ugol';
+    const list = (sw, tot) => (s.cols > 1 && Array.isArray(sw) && sw.reduce((x, y) => x + y, 0) === tot
+      ? ` (по шкафам: ${sw.join(', ')})` : '');
+    const lowerLine = s.nizh === 'da'
+      ? [`Нижние шкафы: ширина ${ugol ? `${s.w} × ${s.w2}` : s.w} мм${list(s.swL, s.w)}, глубина ${s.d} мм, высота ${s.hLow} мм`]
+      : ['Без нижних шкафов'];
     return [
-      `${t}, ${s.forma === 'ugol' ? 'угловая' : 'прямая'}`,
-      `Длина: ${size} мм, глубина ${s.d} мм`,
+      `${t}, ${ugol ? 'угловая' : 'прямая'}`,
+      ...lowerLine,
+      `Верхние шкафы: ширина ${ugol ? `${s.wUp} × ${s.w2Up}` : s.wUp} мм${list(s.swU, s.wUp)}, глубина ${s.dUp} мм, высота ${s.hUp} мм`,
       `Шкафов в ряду: ${s.cols}`,
-      s.nizh === 'da' ? 'С нижними и верхними шкафами' : 'Только верхние шкафы, без нижних',
-      ...(s.susilka === 'da' ? ['Сушилка для посуды 90 см в верхнем шкафу'] : [])
+      ...(s.susilka === 'da' ? ['Сушилка для посуды 90 см в первом верхнем шкафу'] : [])
     ];
   }
   if (type === 'shkaf') {

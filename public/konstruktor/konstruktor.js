@@ -1,12 +1,15 @@
 /* Страница конструктора: настройки, цена, отправка проекта в Telegram.
    Всё это работает и без 3D: если сцена не загрузилась, размеры и цена
    остаются рабочими. */
-import { TYPES, COLORS, SECTION_MIN, equalSections, buildModel, estimate, describe } from './model.js';
+import {
+  TYPES, COLORS, SECTION_MIN, DRYER_CAB, equalSections, upperDefault, buildModel, estimate, describe
+} from './model.js';
 
 const CONTACTS = { sister: 'BintApandi', brother: 'AAA116Z' };
 const SHORT = {
   w: 'w', w2: 'w2', h: 'h', d: 'd', cols: 'c', rows: 'r', gap: 'g', forma: 'f',
-  nizh: 'n', dveri: 'o', shtanga: 's', tumby: 'tb', front: 'fr', susilka: 'sh'
+  nizh: 'n', dveri: 'o', shtanga: 's', tumby: 'tb', front: 'fr', susilka: 'sh', hLow: 'hn', hUp: 'hv',
+  wUp: 'wu', w2Up: 'w2u', dUp: 'du'
 };
 const SECTION_STEP = 10;
 
@@ -22,7 +25,7 @@ const el = {
 function defaults(type) {
   const out = {};
   Object.entries(TYPES[type].fields).forEach(([k, f]) => { out[k] = f.def; });
-  if (type === 'shkaf') out.sw = equalSections(out.w, out.cols);
+  groups(type).forEach((g) => { out[g.key] = defaultSections(g, out); });
   return out;
 }
 
@@ -55,42 +58,102 @@ function fitDependents(type) {
   Object.entries(TYPES[type].fields).forEach(([k, f]) => {
     if (f.maxOf || f.minFn || f.optionOk) s[k] = clampField(f, s[k], s);
   });
-  if (type === 'shkaf') s.sw = fitSections(s.sw, s.w, s.cols);
+  groups(type).forEach((g) => { s[g.key] = fitGroup(g, s); });
 }
 
-/* ---------- Ширина отсеков шкафа ----------
-   Это ширины колонок по осям перегородок, в сумме равные ширине шкафа.
-   Ниша не меняется: если один отсек шире, соседний на столько же уже. */
-function fitSections(sw, w, cols) {
+/* ---------- Ширина каждого шкафа или отсека ----------
+   Это ширины по осям перегородок, в сумме равные общей ширине ряда. Ниша не
+   меняется: если один шкаф шире, соседний на столько же уже. Группы описывают,
+   какие ряды можно так настраивать. */
+const GROUPS = {
+  shkaf: [
+    { key: 'sw', param: 'sw', total: 'w', after: 'cols', title: 'Ширина отсеков', item: 'Отсек',
+      hint: 'Сумма всегда равна ширине шкафа: соседний отсек подстраивается сам.' }
+  ],
+  kuhnya: [
+    { key: 'swL', param: 'sl', total: 'w', after: 'susilka', title: 'Ширина нижних шкафов', item: 'Нижний шкаф',
+      hint: 'Сумма равна ширине нижних шкафов: соседний шкаф подстраивается сам.',
+      when: (s) => s.nizh === 'da' },
+    { key: 'swU', param: 'su', total: 'wUp', after: 'susilka', title: 'Ширина верхних шкафов', item: 'Верхний шкаф',
+      hint: 'Сумма равна ширине верхних шкафов: соседний шкаф подстраивается сам.' }
+  ]
+};
+
+function groups(type) { return GROUPS[type] || []; }
+function activeGroups(type, s) { return groups(type).filter((g) => !g.when || g.when(s)); }
+
+/* первый верхний шкаф под сушилку не меняется */
+function fixedFirst(g, s) { return g.key === 'swU' && s.susilka === 'da' && s.cols > 1; }
+function firstFree(g, s) { return fixedFirst(g, s) ? 1 : 0; }
+function canAdjust(g, s) { return s.cols - firstFree(g, s) >= 2; }
+
+function defaultSections(g, s) {
+  return g.key === 'swU' ? upperDefault(s[g.total], s.cols, s.susilka === 'da') : equalSections(s[g.total], s.cols);
+}
+
+function fitList(sw, w, cols) {
   if (!Array.isArray(sw) || sw.length !== cols) return equalSections(w, cols);
   const sum = sw.reduce((a, b) => a + b, 0);
   if (sum === w) return sw;
   /* общая ширина изменилась: сохраняем пропорции */
   const out = sw.map((x) => Math.max(SECTION_MIN, Math.round((x * w) / sum / SECTION_STEP) * SECTION_STEP));
-  const rest = w - out.slice(0, -1).reduce((a, b) => a + b, 0);
-  out[cols - 1] = rest;
+  out[cols - 1] = w - out.slice(0, -1).reduce((a, b) => a + b, 0);
   return out.every((x) => x >= SECTION_MIN) ? out : equalSections(w, cols);
 }
 
-function neighbourOf(i, cols) {
-  return i < cols - 1 ? i + 1 : i - 1;
+function fitGroup(g, s) {
+  const arr = s[g.key];
+  const total = s[g.total];
+  if (fixedFirst(g, s)) {
+    if (!Array.isArray(arr) || arr.length !== s.cols || arr[0] !== DRYER_CAB) return defaultSections(g, s);
+    return [DRYER_CAB, ...fitList(arr.slice(1), total - DRYER_CAB, s.cols - 1)];
+  }
+  return fitList(arr, total, s.cols);
 }
 
-function setSection(i, raw, source) {
-  const s = values.shkaf;
-  const j = neighbourOf(i, s.cols);
-  const pair = s.sw[i] + s.sw[j];
+function neighbourOf(g, s, i) {
+  return i < s.cols - 1 ? i + 1 : i - 1;
+}
+
+function secId(g, i) { return `${g.key}:${i}`; }
+
+function parseSecId(raw) {
+  const [key, idx] = String(raw).split(':');
+  const g = groups(state.type).find((x) => x.key === key);
+  return g ? { g, i: Number(idx) } : null;
+}
+
+/* подтянуть поля ввода к данным группы */
+function syncGroupDom(g, s) {
+  s[g.key].forEach((v, i) => {
+    const r = el.fields.querySelector(`[data-secr="${secId(g, i)}"]`);
+    const nInput = el.fields.querySelector(`[data-sec="${secId(g, i)}"]`);
+    if (r) {
+      r.max = v + s[g.key][neighbourOf(g, s, i)] - SECTION_MIN;
+      r.value = v;
+      paintRange(r);
+    }
+    if (nInput) { nInput.max = r ? r.max : nInput.max; nInput.value = v; }
+  });
+}
+
+function setSection(g, i, raw, source) {
+  const s = values[state.type];
+  const arr = s[g.key];
+  const j = neighbourOf(g, s, i);
+  if (i < firstFree(g, s) || j < firstFree(g, s)) return;
+  const pair = arr[i] + arr[j];
   let v = Math.round(Number(raw) / SECTION_STEP) * SECTION_STEP;
-  if (!Number.isFinite(v)) v = s.sw[i];
+  if (!Number.isFinite(v)) v = arr[i];
   v = Math.min(pair - SECTION_MIN, Math.max(SECTION_MIN, v));
-  s.sw[i] = v;
-  s.sw[j] = pair - v;
+  arr[i] = v;
+  arr[j] = pair - v;
   [i, j].forEach((k) => {
-    const r = el.fields.querySelector(`[data-secr="${k}"]`);
-    const n = el.fields.querySelector(`[data-sec="${k}"]`);
-    if (r && !(k === i && source === 'range')) r.value = s.sw[k];
+    const r = el.fields.querySelector(`[data-secr="${secId(g, k)}"]`);
+    const nInput = el.fields.querySelector(`[data-sec="${secId(g, k)}"]`);
+    if (r && !(k === i && source === 'range')) r.value = arr[k];
     if (r) paintRange(r);
-    if (n && !(k === i && source === 'typing')) n.value = s.sw[k];
+    if (nInput && !(k === i && source === 'typing')) nInput.value = arr[k];
   });
   refreshSoon();
 }
@@ -111,13 +174,21 @@ function readUrl() {
       const raw = q.get(SHORT[k]);
       if (raw !== null) s[k] = clampField(f, raw, s);
     });
-  if (state.type === 'shkaf') {
-    const sw = (q.get('sw') || '').split(',').map(Number);
-    const ok = sw.length === s.cols && sw.every((x) => Number.isFinite(x) && x >= SECTION_MIN)
-      && sw.reduce((a, b) => a + b, 0) === s.w;
-    s.sw = ok ? sw : equalSections(s.w, s.cols);
+  /* старые ссылки на кухню задавали один размер на оба ряда */
+  if (state.type === 'kuhnya') {
+    if (q.get('wu') === null && q.get('w') !== null) s.wUp = s.w;
+    if (q.get('w2u') === null && q.get('w2') !== null) s.w2Up = s.w2;
   }
   fitDependents(state.type);
+  groups(state.type).forEach((g) => {
+    const raw = q.get(g.param);
+    if (raw === null) return;
+    const list = raw.split(',').map(Number);
+    const ok = list.length === s.cols && list.every((x) => Number.isFinite(x) && x >= SECTION_MIN)
+      && list.reduce((a, b) => a + b, 0) === s[g.total]
+      && (!fixedFirst(g, s) || list[0] === DRYER_CAB);
+    if (ok) s[g.key] = list;
+  });
 }
 
 function projectUrl() {
@@ -126,7 +197,7 @@ function projectUrl() {
   Object.entries(TYPES[state.type].fields).forEach(([k, f]) => {
     if (!f.when || f.when(s)) q.set(SHORT[k], s[k]);
   });
-  if (state.type === 'shkaf' && s.cols > 1) q.set('sw', s.sw.join(','));
+  activeGroups(state.type, s).forEach((g) => { if (s.cols > 1) q.set(g.param, s[g.key].join(',')); });
   return `${location.origin}${location.pathname}?${q}`;
 }
 
@@ -209,18 +280,29 @@ function fieldHtml(key, f, s) {
   </div>`;
 }
 
-/* Ширина каждого отсека: ползунок отдаёт место соседнему отсеку */
-function sectionsHtml(s) {
-  const rows = s.sw.map((v, i) => {
-    const j = neighbourOf(i, s.cols);
-    const max = v + s.sw[j] - SECTION_MIN;
+/* Ширина каждого шкафа: ползунок отдаёт место соседнему */
+function sectionsHtml(g, s) {
+  const free = firstFree(g, s);
+  const adjust = canAdjust(g, s);
+  const rows = s[g.key].map((v, i) => {
+    if (i < free || !adjust) {
+      const why = i < free ? ', под сушилку' : '';
+      return `<div class="kf__sec kf__sec--fixed">
+        <span class="kf__label">${g.item} ${i + 1}${why}</span>
+        <span class="mono kf__fixed">${v} мм</span>
+      </div>`;
+    }
+    const j = neighbourOf(g, s, i);
+    const max = v + s[g.key][j] - SECTION_MIN;
+    const id = secId(g, i);
     return `<div class="kf__sec">
-      ${sizeHtml(`data-sec="${i}"`, `data-secr="${i}"`, `sw-${i}`, `Отсек ${i + 1}`, v, SECTION_MIN, max, SECTION_STEP)}
+      ${sizeHtml(`data-sec="${id}"`, `data-secr="${id}"`, `sw-${g.key}-${i}`, `${g.item} ${i + 1}`, v, SECTION_MIN, max, SECTION_STEP)}
     </div>`;
   }).join('');
+  const dryerNote = free ? ' Шкаф под сушилку фиксированный: внутри него ровно 90 см.' : '';
   return `<div class="kf kf--secs">
-    <span class="kf__label">Ширина отсеков</span>
-    <p class="kf__hint">Сумма всегда равна ширине шкафа: соседний отсек подстраивается сам.</p>
+    <span class="kf__label">${g.title}</span>
+    <p class="kf__hint">${g.hint}${dryerNote}</p>
     ${rows}
   </div>`;
 }
@@ -234,7 +316,8 @@ function renderFields() {
   const s = values[state.type];
   el.fields.innerHTML = Object.entries(TYPES[state.type].fields)
     .filter(([, f]) => !f.when || f.when(s))
-    .map(([k, f]) => fieldHtml(k, f, s) + (state.type === 'shkaf' && k === 'cols' && s.cols > 1 ? sectionsHtml(s) : ''))
+    .map(([k, f]) => fieldHtml(k, f, s) + (s.cols > 1
+      ? activeGroups(state.type, s).filter((g) => g.after === k).map((g) => sectionsHtml(g, s)).join('') : ''))
     .join('');
   el.fields.querySelectorAll('.range').forEach(paintRange);
 }
@@ -327,15 +410,11 @@ function setValue(key, raw, source) {
   const f = TYPES[state.type].fields[key];
   const s = values[state.type];
   s[key] = clampField(f, raw, s);
-  if (state.type === 'shkaf' && key === 'w') {
-    s.sw = fitSections(s.sw, s.w, s.cols);
-    s.sw.forEach((v, i) => {
-      const r = el.fields.querySelector(`[data-secr="${i}"]`);
-      const n = el.fields.querySelector(`[data-sec="${i}"]`);
-      if (r) { r.max = v + s.sw[neighbourOf(i, s.cols)] - SECTION_MIN; r.value = v; paintRange(r); }
-      if (n) { n.max = r ? r.max : n.max; n.value = v; }
-    });
-  }
+  /* общая ширина изменилась: ширины шкафов пересчитываются по пропорциям */
+  groups(state.type).filter((g) => g.total === key).forEach((g) => {
+    s[g.key] = fitGroup(g, s);
+    syncGroupDom(g, s);
+  });
   const range = el.fields.querySelector(`[data-range="${key}"]`);
   const num = el.fields.querySelector(`[data-num="${key}"]`);
   if (range && source !== 'range') range.value = s[key];
@@ -362,16 +441,22 @@ el.fields.addEventListener('input', (e) => {
   const t = e.target;
   const s = values[state.type];
   if (t.dataset.range) setValue(t.dataset.range, t.value, 'range');
-  if (t.dataset.secr) setSection(Number(t.dataset.secr), t.value, 'range');
+  if (t.dataset.secr) {
+    const p = parseSecId(t.dataset.secr);
+    if (p) setSection(p.g, p.i, t.value, 'range');
+  }
   if (t.dataset.num && t.value !== '') {
     const f = TYPES[state.type].fields[t.dataset.num];
     const v = Number(t.value);
     if (v >= minFor(f, s) && v <= maxFor(f, s)) setValue(t.dataset.num, t.value, 'typing');
   }
   if (t.dataset.sec && t.value !== '') {
-    const i = Number(t.dataset.sec);
-    const v = Number(t.value);
-    if (v >= SECTION_MIN && v <= s.sw[i] + s.sw[neighbourOf(i, s.cols)] - SECTION_MIN) setSection(i, v, 'typing');
+    const p = parseSecId(t.dataset.sec);
+    if (p) {
+      const v = Number(t.value);
+      const pair = s[p.g.key][p.i] + s[p.g.key][neighbourOf(p.g, s, p.i)];
+      if (v >= SECTION_MIN && v <= pair - SECTION_MIN) setSection(p.g, p.i, v, 'typing');
+    }
   }
 });
 
@@ -381,7 +466,10 @@ el.fields.addEventListener('change', (e) => {
   const t = e.target;
   const s = values[state.type];
   if (t.dataset.num) setValue(t.dataset.num, t.value === '' ? s[t.dataset.num] : t.value, 'blur');
-  if (t.dataset.sec) setSection(Number(t.dataset.sec), t.value === '' ? s.sw[Number(t.dataset.sec)] : t.value, 'blur');
+  if (t.dataset.sec) {
+    const p = parseSecId(t.dataset.sec);
+    if (p) setSection(p.g, p.i, t.value === '' ? s[p.g.key][p.i] : t.value, 'blur');
+  }
   if (t.dataset.secr || t.dataset.sec) {
     const id = t.id;
     renderFields();
@@ -390,6 +478,8 @@ el.fields.addEventListener('change', (e) => {
   }
   if (t.type === 'radio') {
     s[t.name] = t.value;
+    /* сушилка меняет первый верхний шкаф: делим ширины заново */
+    if (t.name === 'susilka') groups(state.type).forEach((g) => { s[g.key] = defaultSections(g, s); });
     fitDependents(state.type);
     renderFields();
     refresh({ refit: true });
@@ -405,8 +495,8 @@ el.fields.addEventListener('click', (e) => {
   const next = clampField(f, s[key] + Number(b.dataset.by), s);
   if (next === s[key]) return;
   s[key] = next;
-  /* новое число отсеков: делим ширину поровну заново */
-  if (state.type === 'shkaf' && key === 'cols') s.sw = equalSections(s.w, s.cols);
+  /* новое число шкафов: делим ширину поровну заново */
+  if (key === 'cols') groups(state.type).forEach((g) => { s[g.key] = defaultSections(g, s); });
   fitDependents(state.type);
   renderFields();
   const again = el.fields.querySelector(`[data-step="${key}"][data-by="${b.dataset.by}"]`);

@@ -199,3 +199,7 @@
 .kf--secs .kf__hint{margin-top:2px}
 .kf__sec{padding-top:6px}
 .kf__sec .kf__label{font-size:.875rem;color:var(--chalk-2)}
+
+/* Шкаф, ширина которого не меняется (под сушилку или единственный) */
+.kf__sec--fixed{display:flex;justify-content:space-between;align-items:center;min-height:44px}
+.kf__fixed{font-size:.875rem;color:var(--chalk-3)}

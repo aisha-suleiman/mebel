@@ -7,6 +7,8 @@ const MM = 0.001;
 const DIM_OFFSET = 130;
 const TICK = 34;
 const OPEN_ANGLE = 1.75;
+/* подъёмная дверь поворачивается вокруг верхней кромки */
+const LIFT_ANGLE = 1.4;
 const INK = 0x2b1e16;
 const RULE = 0x5c4634;
 
@@ -277,7 +279,10 @@ export function createScene(stage, labels) {
   }
 
   function placeMoving(t) {
-    doorGroups.forEach((g) => { g.rotation.y = g.userData.dir * OPEN_ANGLE * t; });
+    doorGroups.forEach((g) => {
+      if (g.userData.axis === 'x') g.rotation.x = -LIFT_ANGLE * t;
+      else g.rotation.y = g.userData.dir * OPEN_ANGLE * t;
+    });
     slideGroups.forEach((g) => g.position.set(g.userData.dx * MM * t, 0, g.userData.dz * MM * t));
   }
 
@@ -294,17 +299,20 @@ export function createScene(stage, labels) {
     doorGroups = [];
     slideGroups = [];
 
-    const groups = { a: new THREE.Group(), b: new THREE.Group() };
-    root.add(groups.a, groups.b);
-    if (model.wing) {
-      groups.b.position.set(model.wing.x * MM, 0, model.wing.z * MM);
-      groups.b.rotation.y = -Math.PI / 2;
-    }
+    const groups = { a: new THREE.Group(), b: new THREE.Group(), c: new THREE.Group() };
+    root.add(groups.a, groups.b, groups.c);
+    /* b: вторая сторона нижнего ряда, c: вторая сторона верхнего ряда */
+    [['b', model.wing], ['c', model.wingUp]].forEach(([k, w]) => {
+      if (!w) return;
+      groups[k].position.set(w.x * MM, 0, w.z * MM);
+      groups[k].rotation.y = -Math.PI / 2;
+    });
     const pivots = {};
     model.doors.forEach((d) => {
       const g = new THREE.Group();
-      g.position.set(d.x * MM, 0, d.z * MM);
+      g.position.set(d.x * MM, (d.y || 0) * MM, d.z * MM);
       g.userData.dir = d.dir;
+      g.userData.axis = d.axis || 'y';
       groups[d.g].add(g);
       pivots[d.id] = { g, d };
       g.visible = doorsShown;
@@ -324,7 +332,7 @@ export function createScene(stage, labels) {
       const mesh = makeMesh(p, color);
       if (p.door !== undefined) {
         const { g, d } = pivots[p.door];
-        mesh.position.set((p.p[0] - d.x) * MM, p.p[1] * MM, (p.p[2] - d.z) * MM);
+        mesh.position.set((p.p[0] - d.x) * MM, (p.p[1] - (d.y || 0)) * MM, (p.p[2] - d.z) * MM);
         g.add(mesh);
       } else {
         mesh.position.set(p.p[0] * MM, p.p[1] * MM, p.p[2] * MM);
@@ -338,8 +346,8 @@ export function createScene(stage, labels) {
 
     const b = new THREE.Box3().setFromObject(root);
     man.position.x = b.min.x - 0.62;
-    side.visible = !!model.wing;
-    if (model.wing) side.position.x = b.max.x + 0.002;
+    side.visible = !!(model.wing || model.wingUp);
+    if (side.visible) side.position.x = b.max.x + 0.002;
 
     model.dims.forEach(addDim);
     fit(opts && opts.refit);
