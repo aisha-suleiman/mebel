@@ -20,7 +20,7 @@ export const PRICE = {
   rollersPerDoor: 4,
   kupeRailUsdPerM: 3.5, /* рельсы купе за погонный метр, считаем верхний и нижний */
   railUsdPerM: 1,      /* штанга для одежды за погонный метр */
-  dryerUsd: 15,        /* сушилка для посуды шириной 90 см */
+  dryerUsd: 15,        /* сушилка для посуды шириной 80 см */
   markup: 1.5          /* ко всей себестоимости плюс 50 % */
 };
 
@@ -64,14 +64,14 @@ export const TYPES = {
       nizh: { kind: 'choice', label: 'Нижние шкафы', def: 'net',
         options: { da: 'С нижними', net: 'Без нижних' } },
       susilka: { kind: 'choice', label: 'Сушилка для посуды', def: 'da',
-        options: { net: 'Без сушилки', da: 'С сушилкой 90 см' } }
+        options: { net: 'Без сушилки', da: 'С сушилкой 80 см' } }
     }
   },
   shkaf: {
     label: 'Шкаф',
     fields: {
       w: { kind: 'size', label: 'Ширина', min: 600, max: 2800, step: 10, def: 2000 },
-      h: { kind: 'size', label: 'Высота', min: 1800, max: 2700, step: 10, def: 1800 },
+      h: { kind: 'size', label: 'Высота', min: 1500, max: 2700, step: 10, def: 1800 },
       d: { kind: 'size', label: 'Глубина', min: 350, max: 600, step: 10, def: 600 },
       cols: { kind: 'count', label: 'Отсеков', min: 1, max: 6, def: 2 },
       /* верхний предел зависит от числа отсеков: maxOf */
@@ -114,6 +114,8 @@ export const TYPES = {
 
 export const COLORS = {
   bel: { label: 'Белый', hex: '#EFEDE6', line: '#8E8A80' },
+  krem: { label: 'Кремовый', hex: '#EBDFC0', line: '#8F8466' },
+  bsir: { label: 'Бежево-сиреневый', hex: '#B9A8B0', line: '#6E5F68' },
   ser: { label: 'Серый', hex: '#A9A8A2', line: '#5F5E59' },
   dub: { label: 'Светлый дуб', hex: '#CFA774', line: '#7D5F38', grain: true },
   orh: { label: 'Орех', hex: '#6E4A2F', line: '#3A2616', grain: true },
@@ -259,7 +261,7 @@ function buildShkaf(s) {
 
 /* Сушилка для посуды: два яруса прутков над поддоном. Размер сушилки это
    внутренняя ширина шкафа. Это фурнитура: в расчёт идёт по цене штуки. */
-const DRYER_W = 900;
+const DRYER_W = 800;
 export const DRYER_CAB = DRYER_W + 2 * T;
 
 function addDryer(m, g, cx, innerW, dep, upY, upH) {
@@ -594,7 +596,7 @@ export function describe(type, s, tr) {
       T('Верхние шкафы: ширина {w} мм{l}, глубина {d} мм, высота {h} мм', {
         w: ugol ? `${s.wUp} × ${s.w2Up}` : s.wUp, l: list(s.swU, s.wUp), d: s.dUp, h: s.hUp }),
       T('Шкафов в ряду: {n}', { n: s.cols }),
-      ...(s.susilka === 'da' ? [T('Сушилка для посуды 90 см в первом верхнем шкафу')] : [])
+      ...(s.susilka === 'da' ? [T('Сушилка для посуды 80 см в первом верхнем шкафу')] : [])
     ];
   }
   if (type === 'shkaf') {

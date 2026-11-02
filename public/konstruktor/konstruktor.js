@@ -3,7 +3,7 @@
    остаются рабочими. */
 import {
   TYPES, COLORS, SECTION_MIN, DRYER_CAB, equalSections, upperDefault, buildModel, estimate, describe
-} from './model.js?v=3';
+} from './model.js?v=6';
 
 const CONTACTS = { sister: 'BintApandi', brother: 'AAA116Z' };
 const SHORT = {
@@ -210,7 +210,7 @@ let view = null;
 
 async function startScene() {
   try {
-    const { createScene } = await import('./scene.js?v=3');
+    const { createScene } = await import('./scene.js?v=6');
     view = createScene(el.stage, el.labels);
     el.status.hidden = true;
     refresh({ refit: true });
@@ -312,7 +312,7 @@ function sectionsHtml(g, s) {
       ${sizeHtml(`data-sec="${id}"`, `data-secr="${id}"`, `sw-${g.key}-${i}`, `${tr(g.item)} ${i + 1}`, v, SECTION_MIN, max, SECTION_STEP)}
     </div>`;
   }).join('');
-  const dryerNote = free ? ` ${tr('Шкаф под сушилку фиксированный: внутри него ровно 90 см.')}` : '';
+  const dryerNote = free ? ` ${tr('Шкаф под сушилку фиксированный: внутри него ровно 80 см.')}` : '';
   return `<div class="kf kf--secs">
     <span class="kf__label">${tr(g.title)}</span>
     <p class="kf__hint">${tr(g.hint)}${dryerNote}</p>
