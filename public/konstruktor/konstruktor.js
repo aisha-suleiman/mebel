@@ -3,7 +3,7 @@
    остаются рабочими. */
 import {
   TYPES, COLORS, SECTION_MIN, DRYER_CAB, equalSections, upperDefault, buildModel, estimate, describe
-} from './model.js?v=2';
+} from './model.js?v=3';
 
 const CONTACTS = { sister: 'BintApandi', brother: 'AAA116Z' };
 const SHORT = {
@@ -210,7 +210,7 @@ let view = null;
 
 async function startScene() {
   try {
-    const { createScene } = await import('./scene.js?v=2');
+    const { createScene } = await import('./scene.js?v=3');
     view = createScene(el.stage, el.labels);
     el.status.hidden = true;
     refresh({ refit: true });
@@ -371,8 +371,8 @@ function refresh(opts) {
   const sum = estimate(model);
   el.price.textContent = `${sum.usd} $`;
   el.note.textContent = state.type === 'kuhnya'
-    ? tr('Стоимость примерная, столешница считается отдельно. Точную назовём после замера.')
-    : tr('Стоимость примерная. Точную назовём после замера.');
+    ? tr('Стоимость примерная, столешница считается отдельно. Чтобы узнать точную стоимость, свяжитесь с нами.')
+    : tr('Стоимость примерная. Чтобы узнать точную стоимость, свяжитесь с нами.');
 
   const text = message(sum.usd);
   el.sendText.textContent = text;

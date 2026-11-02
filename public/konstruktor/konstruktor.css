@@ -156,7 +156,6 @@
   padding:10px var(--gut) calc(10px + env(safe-area-inset-bottom));
   background:var(--ink-2);border-top:1px solid var(--rule-2);
 }
-.kz__bar-label{display:block;font-size:.75rem;color:var(--chalk-3);white-space:nowrap}
 .kz__price{display:block;font-size:1.5rem;font-weight:500;line-height:1.2;color:var(--chalk)}
 .kz__bar .btn{flex:0 1 auto;padding:0 18px;white-space:nowrap}
 
@@ -191,7 +190,6 @@
 /* Самые узкие телефоны: подпись цены в две строки, чтобы кнопка не упиралась в край */
 @media(max-width:360px){
   .kz__bar{gap:10px}
-  .kz__bar-label{white-space:normal;max-width:6.5em;line-height:1.2}
   .kz__bar .btn{padding:0 14px;font-size:.875rem}
 }
 
