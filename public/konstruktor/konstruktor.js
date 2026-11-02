@@ -3,12 +3,12 @@
    остаются рабочими. */
 import {
   TYPES, COLORS, SECTION_MIN, DRYER_CAB, equalSections, upperDefault, buildModel, estimate, describe
-} from './model.js?v=6';
+} from './model.js?v=8';
 
 const CONTACTS = { sister: 'BintApandi', brother: 'AAA116Z' };
 const SHORT = {
   w: 'w', w2: 'w2', h: 'h', d: 'd', cols: 'c', rows: 'r', gap: 'g', forma: 'f',
-  nizh: 'n', dveri: 'o', shtanga: 's', tumby: 'tb', front: 'fr', susilka: 'sh', hLow: 'hn', hUp: 'hv',
+  nizh: 'n', shelves: 'pk', dveri: 'o', shtanga: 's', tumby: 'tb', front: 'fr', susilka: 'sh', hLow: 'hn', hUp: 'hv',
   wUp: 'wu', w2Up: 'w2u', dUp: 'du'
 };
 const SECTION_STEP = 10;
@@ -210,7 +210,7 @@ let view = null;
 
 async function startScene() {
   try {
-    const { createScene } = await import('./scene.js?v=6');
+    const { createScene } = await import('./scene.js?v=8');
     view = createScene(el.stage, el.labels);
     el.status.hidden = true;
     refresh({ refit: true });

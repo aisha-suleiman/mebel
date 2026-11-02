@@ -61,6 +61,8 @@ export const TYPES = {
       dUp: { kind: 'size', label: 'Глубина верхних шкафов', min: 300, max: 450, step: 10, def: 350 },
       hUp: { kind: 'size', label: 'Высота верхних шкафов', min: 600, max: 1000, step: 10, def: 700 },
       cols: { kind: 'count', label: 'Шкафов в ряду', min: 2, max: 8, def: 4 },
+      /* полки внутри каждого шкафа, кроме шкафа с сушилкой */
+      shelves: { kind: 'count', label: 'Полок в шкафу', min: 0, max: 4, def: 1 },
       nizh: { kind: 'choice', label: 'Нижние шкафы', def: 'net',
         options: { da: 'С нижними', net: 'Без нижних' } },
       susilka: { kind: 'choice', label: 'Сушилка для посуды', def: 'da',
@@ -305,7 +307,7 @@ function validWidths(sw, len, cols) {
 
 /* Нижний ряд: шкафы вдоль оси x, от from, ширины в массиве widths, с цоколем
    и столешницей. Группа b это вторая сторона угловой кухни. */
-function kitchenLower(m, g, from, widths, d, hLow) {
+function kitchenLower(m, g, from, widths, d, hLow, shelves) {
   const P = m.parts;
   const plinth = 100, baseH = hLow;
   const len = widths.reduce((a, b) => a + b, 0);
@@ -320,7 +322,9 @@ function kitchenLower(m, g, from, widths, d, hLow) {
     /* боковины до пола: иначе под шкафом с торца виден пустой зазор */
     [x0 + T / 2, x1 - T / 2].forEach((x) => part(P, 'body', [T, y1, dep], [x, y1 / 2, dep / 2], { g }));
     part(P, 'body', [modW - 2 * T, T, dep], [cx, y0 + T / 2, dep / 2], { g });
-    part(P, 'body', [modW - 2 * T, T, dep - 20], [cx, y0 + baseH / 2, dep / 2], { g });
+    for (let k = 1; k <= shelves; k++) {
+      part(P, 'body', [modW - 2 * T, T, dep - 20], [cx, y0 + T + (k * (baseH - T)) / (shelves + 1), dep / 2], { g });
+    }
     part(P, 'back', [modW, baseH, 4], [cx, y0 + baseH / 2, 2], { g });
     const each = modW > 620 ? 2 : 1;
     const dw = modW / each;
@@ -335,7 +339,7 @@ function kitchenLower(m, g, from, widths, d, hLow) {
 /* Верхний ряд: от from, ширины в массиве widths, низ шкафов на высоте 1400 мм.
    Шкаф под сушилку это первый, если его ширина ровно DRYER_CAB.
    Группа c это вторая сторона верхнего ряда угловой кухни. */
-function kitchenUpper(m, g, from, widths, upD, hUp, dryer) {
+function kitchenUpper(m, g, from, widths, upD, hUp, dryer, shelves) {
   const P = m.parts;
   const upY = 1400, upH = hUp;
   const hasDryer = dryer && widths[0] === DRYER_CAB;
@@ -348,6 +352,11 @@ function kitchenUpper(m, g, from, widths, upD, hUp, dryer) {
     [upY + T / 2, upY + upH - T / 2].forEach((y) => part(P, 'body', [uW - 2 * T, T, dep], [cx, y, dep / 2], { g }));
     part(P, 'back', [uW, upH, 4], [cx, upY + upH / 2, 2], { g });
     if (hasDryer && i === 0) addDryer(m, g, cx, uW - 2 * T, dep, upY, upH);
+    else {
+      for (let k = 1; k <= shelves; k++) {
+        part(P, 'body', [uW - 2 * T, T, dep - 20], [cx, upY + T + (k * (upH - 2 * T)) / (shelves + 1), dep / 2], { g });
+      }
+    }
     /* шкаф с сушилкой всегда закрывает одна дверь вверх на газлифтах */
     if (hasDryer && i === 0) {
       addLiftDoor(m, g, x0 + 1.5, x1 - 1.5, upY + 2, upY + upH - 2, dep);
@@ -378,8 +387,9 @@ function buildKuhnya(s) {
   const topY = 1400 + hUp;
   const zUp = ugol ? 0 : dU;
 
-  if (lower) kitchenLower(m, 'a', x0, swL, dL, hLow);
-  kitchenUpper(m, 'a', x0, swU, dU, hUp, dryer);
+  const shelves = s.shelves;
+  if (lower) kitchenLower(m, 'a', x0, swL, dL, hLow, shelves);
+  kitchenUpper(m, 'a', x0, swU, dU, hUp, dryer, shelves);
 
   m.dims.push({ a: [x0, topY, zUp], b: [x0 + wU, topY, zUp], n: [0, 1, 0], v: wU });
   if (lower && wL !== wU) {
@@ -394,13 +404,13 @@ function buildKuhnya(s) {
       const len = s.w2 - dL;
       const wc = Math.max(1, Math.round(len / (wL / cols)));
       m.wing = { x: x0 + wL, z: dL };
-      kitchenLower(m, 'b', 0, equalSections(len, wc), dL, hLow);
+      kitchenLower(m, 'b', 0, equalSections(len, wc), dL, hLow, shelves);
       m.dims.push({ a: [x0 + wL, 0, 0], b: [x0 + wL, 0, s.w2], n: [1, 0, 0], v: s.w2 });
     }
     const lenU = s.w2Up - dU;
     const wcU = Math.max(1, Math.round(lenU / (wU / cols)));
     m.wingUp = { x: x0 + wU, z: dU };
-    kitchenUpper(m, 'c', 0, equalSections(lenU, wcU), dU, hUp, false);
+    kitchenUpper(m, 'c', 0, equalSections(lenU, wcU), dU, hUp, false, shelves);
     if (!lower || s.w2Up !== s.w2 || wU !== wL) {
       m.dims.push({ a: [x0 + wU, topY, 0], b: [x0 + wU, topY, s.w2Up], n: [1, 0, 0], v: s.w2Up });
     }
@@ -596,6 +606,7 @@ export function describe(type, s, tr) {
       T('Верхние шкафы: ширина {w} мм{l}, глубина {d} мм, высота {h} мм', {
         w: ugol ? `${s.wUp} × ${s.w2Up}` : s.wUp, l: list(s.swU, s.wUp), d: s.dUp, h: s.hUp }),
       T('Шкафов в ряду: {n}', { n: s.cols }),
+      ...(s.shelves > 0 ? [T(s.susilka === 'da' ? 'Полок в каждом шкафу, кроме шкафа с сушилкой: {n}' : 'Полок в каждом шкафу: {n}', { n: s.shelves })] : []),
       ...(s.susilka === 'da' ? [T('Сушилка для посуды 80 см в первом верхнем шкафу')] : [])
     ];
   }

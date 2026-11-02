@@ -1,0 +1,66 @@
+/* Презентация: полноэкранные слайды, прокрутка с примагничиванием.
+   Вертикальная прокрутка выбрана потому, что одинаково работает пальцем,
+   колесом и клавишами, а при письме справа налево ничего не зеркалит. */
+html:has(.deck-page){scroll-snap-type:y mandatory}
+
+.slide{
+  min-height:100vh;min-height:100svh;
+  scroll-snap-align:start;scroll-snap-stop:always;
+  display:grid;align-items:center;
+  padding:110px calc(var(--gut) + 22px) 56px var(--gut);
+  border-bottom:1px solid var(--rule);
+}
+.slide:nth-child(even){background:var(--ink-2)}
+html[dir="rtl"] .slide{padding-inline:calc(var(--gut) + 22px) var(--gut)}
+.slide__in{width:100%;max-width:62rem;margin-inline:auto;display:grid;gap:clamp(20px,3vw,34px);justify-items:start}
+.slide__in--wide{max-width:var(--wrap)}
+
+.slide h1{font-size:clamp(2.4rem,7.2vw,5.5rem);line-height:1.02;letter-spacing:-.035em}
+.slide h2{font-size:clamp(1.9rem,5vw,3.75rem);line-height:1.06}
+.slide__lede{max-width:40ch;color:var(--chalk-2);font-size:clamp(1.0625rem,2.2vw,1.5rem);line-height:1.5}
+.slide__city{color:var(--wood);font-size:.9375rem}
+.slide__city a{color:var(--wood);text-decoration:none;border-bottom:1px solid var(--rule-2)}
+.slide .btn{min-height:52px}
+
+.kinds,.steps{list-style:none;margin:0;padding:0;display:grid;gap:0;width:100%}
+.kinds li,.steps li{
+  display:flex;align-items:baseline;gap:18px;padding:14px 0;
+  border-top:1px solid var(--rule-2);color:var(--chalk);
+  font-size:clamp(1.25rem,3.4vw,2.25rem);font-weight:400;
+}
+.kinds li:last-child,.steps li:last-child{border-bottom:1px solid var(--rule-2)}
+.n{color:var(--chalk-3);font-size:.8125rem;min-width:2ch}
+.steps li.is-span{color:var(--turq)}
+.span{
+  padding:9px 14px;border:1px dashed var(--turq);color:var(--turq);
+  font-size:.875rem;
+}
+
+.acts{display:flex;flex-wrap:wrap;gap:12px}
+
+.shots{display:grid;gap:14px;grid-template-columns:repeat(2,1fr);width:100%}
+@media(min-width:900px){.shots{grid-template-columns:repeat(4,1fr)}}
+.shots figure{margin:0;display:grid;gap:8px;min-width:0}
+.shots img{
+  width:100%;aspect-ratio:3/4;object-fit:cover;display:block;
+  border:1px solid var(--rule-2);
+  filter:saturate(.88) contrast(1.04) brightness(.97);
+}
+@media(max-height:640px){.shots img{aspect-ratio:1/1}}
+.shots figcaption{font-size:.75rem;color:var(--chalk-3)}
+
+/* точки у края: где мы и быстрый переход */
+.dots{
+  position:fixed;inset-inline-end:max(8px,env(safe-area-inset-right));top:50%;transform:translateY(-50%);
+  z-index:30;display:grid;
+}
+.dots a{display:grid;place-items:center;width:28px;height:28px}
+.dots a::before{
+  content:"";width:9px;height:9px;border-radius:99px;
+  border:1px solid var(--chalk-3);background:transparent;
+  transition:background var(--dur) var(--ease),border-color var(--dur) var(--ease);
+}
+.dots a.is-on::before{background:var(--turq);border-color:var(--turq)}
+
+@media(prefers-reduced-motion:reduce){html:has(.deck-page){scroll-snap-type:none}}
+@media(max-height:820px){.kinds li,.steps li{padding:9px 0}.slide{padding-top:96px;padding-bottom:36px}}
