@@ -3,7 +3,7 @@
    остаются рабочими. */
 import {
   TYPES, COLORS, SECTION_MIN, DRYER_CAB, equalSections, upperDefault, buildModel, estimate, describe
-} from './model.js?v=8';
+} from './model.js?v=9';
 
 const CONTACTS = { sister: 'BintApandi', brother: 'AAA116Z' };
 const SHORT = {
@@ -210,7 +210,7 @@ let view = null;
 
 async function startScene() {
   try {
-    const { createScene } = await import('./scene.js?v=8');
+    const { createScene } = await import('./scene.js?v=9');
     view = createScene(el.stage, el.labels);
     el.status.hidden = true;
     refresh({ refit: true });
