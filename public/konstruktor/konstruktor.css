@@ -5,9 +5,9 @@
 /* display в правилах ниже иначе перебивает атрибут hidden */
 [hidden]{display:none!important}
 
-.kz-page{--head:61px}
+.kz-page{--head:73px}
 .kz-page .top{padding-block:8px}
-.kz-page .mark__logo{height:44px}
+.kz-page .mark__logo{height:56px}
 
 .sr{
   position:absolute;width:1px;height:1px;overflow:hidden;
@@ -167,9 +167,9 @@
 
 /* ---------- Широкий экран ---------- */
 @media(min-width:980px){
-  .kz-page{--head:85px}
+  .kz-page{--head:105px}
   .kz-page .top{padding-block:12px}
-  .kz-page .mark__logo{height:60px}
+  .kz-page .mark__logo{height:80px}
   .kz{
     grid-template-columns:minmax(0,1.5fr) minmax(340px,1fr);
     grid-template-rows:auto 1fr;

@@ -114,10 +114,10 @@ p{margin:0}
    Исходник 320 × 320, поэтому вплоть до 160 px в шапке
    остаётся резким даже на экране с двойной плотностью. */
 .mark__logo{
-  width:auto;height:76px;border-radius:99px;display:block;
+  width:auto;height:100px;border-radius:99px;display:block;
   background:var(--chalk);
 }
-@media(max-width:620px){.mark__logo{height:60px}}
+@media(max-width:620px){.mark__logo{height:76px}}
 .mark__text{color:var(--chalk);font-size:.9375rem;font-weight:300;letter-spacing:-.01em;white-space:nowrap}
 .mark__text b{font-weight:600}
 .node-dot{fill:var(--turq)}
@@ -384,7 +384,7 @@ p{margin:0}
 .order{padding-block:var(--sec);background:var(--ink)}
 .order__wrap{display:grid;gap:clamp(40px,5vw,76px);grid-template-columns:1fr}
 @media(min-width:980px){.order__wrap{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:start}}
-.order__intro{display:grid;gap:18px;position:sticky;top:96px}
+.order__intro{display:grid;gap:18px;position:sticky;top:150px}
 @media(max-width:979px){.order__intro{position:static}}
 
 .spec{border-top:1px solid var(--rule-2)}
@@ -484,7 +484,7 @@ p{margin:0}
   }
   .hero__stage{
     grid-template-rows:1fr auto;align-content:center;gap:clamp(18px,3vw,32px);
-    padding-block:84px 56px;place-items:center start;
+    padding-block:128px 56px;place-items:center start;
   }
   .draft{max-height:46svh;width:100%;justify-self:center}
   .hero__rail{height:320vh}
@@ -576,7 +576,25 @@ html[dir="rtl"] .notice__msg,html[dir="rtl"] .kz__send .notice__msg{unicode-bidi
 html[dir="rtl"] .spec input[type=text],html[dir="rtl"] .spec input[type=tel]{text-align:start}
 @media(max-width:380px){
   .top{gap:8px;padding-inline:14px}
-  .mark__logo,.kz-page .mark__logo{height:48px}
+  .mark__logo{height:60px}
   .top__cta{padding:0 12px}
   .lang{min-width:52px;padding-inline-start:8px}
 }
+
+/* ============ КОНТАКТЫ TELEGRAM В ШАПКЕ ============ */
+.top__tg{display:flex;flex-direction:column;justify-content:center;min-width:0}
+.top__tg a{
+  display:block;padding:1px 0;font-size:.8125rem;line-height:1.25;
+  color:var(--chalk-2);text-decoration:none;white-space:nowrap;
+  transition:color var(--dur) var(--ease);
+}
+.top__tg a:hover{color:var(--turq)}
+/* на узких экранах в шапке нет места и для меню: конструктор остаётся
+   кнопкой на первом экране, а сама шапка занята контактами и языком */
+@media(max-width:480px){
+  .top__nav{display:none}
+  .lang{margin-inline-start:auto}
+  .top__tg a{font-size:.75rem}
+}
+/* на самых узких экранах канал не помещается рядом с остальным: он остаётся в подвале и на слайдах */
+@media(max-width:359px){.top__tg .top__tg-ch{display:none}}
